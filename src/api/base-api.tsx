@@ -3,7 +3,7 @@ import { DOCOTEAM_API as API } from '../config';
 export const post = (url: string, body: any = {}) => {
     const token = JSON.parse(localStorage.getItem("company") || '{}');
     const { jwt } = token;
-    return fetch(`https://cowork-server.vercel.app/${url}`, {
+    return fetch(`${API}${url}`, {
         method: 'POST',
         headers: {
             Accept: 'application/json',
