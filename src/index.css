@@ -1,0 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+body {
+  margin: 0;
+  line-height: normal;
+  box-sizing: border-box;
+}
+:root {
+  /* fonts */
+  --text-md-regular: Inter;
+
+  /* font sizes */
+  --text-xs-medium-size: 12px;
+  --text-xs-semibold-size: 14px;
+  --text-xl-semibold-size: 20px;
+  --caption-semibold-size: 13px;
+  --text-md-regular-size: 16px;
+  --text-lg-semibold-size: 18px;
+
+  /* Colors */
+  --gray-50: #f9fafb;
+  --secondary-25: #f8fafb;
+  --brand-background-card-light: #f7f8fa;
+  --secondary-50: #f4f7f8;
+  --gray-100: #f2f4f7;
+  --gray-200: #eaecf0;
+  --bg-4: #fff;
+  --gray-400: #98a2b3;
+  --text-7: #d1d5db;
+  --brand-divider: #d0d5dd;
+  --gray-600: #475467;
+  --text-3: #374151;
+  --gray-700: #344154;
+  --typography-body: #344054;
+  --text-2: #1f2937;
+  --typography-subheading: #1d2939;
+  --gray-900: #101828;
+  --brand-brand-primary: #6366f1;
+  --color-khaki: #f1c963;
+  --primary-50: #f9f5ff;
+  --primary-25: #eff0fe;
+  --primary-700: #6941c6;
+  --warning-50: #fffaeb;
+  --error-50: #fef3f2;
+  --orange-dark-50: #fff4ed;
+  --orange-700: #b93815;
+  --pink-50: #fdf2fa;
+  --pink-700: #c11574;
+  --blue-50: #eff8ff;
+  --indigo-50: #eef4ff;
+  --indigo-700: #3538cd;
+  --blue-700: #175cd3;
+  --success-50: #ecfdf3;
+  --success-700: #037a48;
+  --primary-7001: #3d3fa1;
+
+  /* Gaps */
+  --gap-5xl: 24px;
+  --gap-5xs: 8px;
+  --gap-sm: 14px;
+  --gap-7xs: 6px;
+  --gap-13xl: 32px;
+  --gap-3xs: 10px;
+  --gap-base: 16px;
+  --gap-9xs: 4px;
+  --gap-xs: 12px;
+  --gap-21xl: 40px;
+  --gap-xl: 20px;
+
+  /* Paddings */
+  --padding-5xl: 24px;
+  --padding-3xs: 10px;
+  --padding-base: 16px;
+  --padding-lgi: 19px;
+  --padding-xl: 20px;
+  --padding-5xs: 8px;
+  --padding-13xl: 32px;
+  --padding-11xs: 2px;
+  --padding-7xs: 6px;
+  --padding-21xl: 40px;
+  --padding-xs: 12px;
+  --padding-9xs: 4px;
+  --padding-sm: 14px;
+  --padding-lg: 18px;
+
+  /* Border radiuses */
+  --br-mini: 15px;
+  --br-xs: 12px;
+  --br-181xl: 200px;
+  --br-71xl: 90px;
+  --br-7xs: 6px;
+  --br-981xl: 1000px;
+  --br-5xs: 8px;
+  --br-5xl: 24px;
+  --br-xl: 20px;
+  --br-base: 16px;
+
+  /* Effects */
+  --shadow-xs: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}

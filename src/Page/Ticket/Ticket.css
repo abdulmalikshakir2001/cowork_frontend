@@ -1,0 +1,98 @@
+.ticketList .table-responsive {
+    width: 100%;
+}
+
+.ticketList {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    height: calc(100vh - 224px);
+}
+
+.ticketList table thead tr th:nth-child(1),
+.ticketList table tbody tr td:nth-child(1) {
+    width: 68px;
+    text-align: center;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.ticketList table thead tr th {
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: #475467;
+    height: 56px;
+    vertical-align: middle;
+    white-space: nowrap;
+    background-color: #f4f7f8;
+}
+
+.ticketList table tbody tr td:nth-child(2),
+.ticketList table tbody tr td:nth-child(3),
+.ticketList table tbody tr td:nth-child(4),
+.ticketList table tbody tr td:nth-child(5) {
+    color: #475467;
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 0em;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ticketList .status .open {
+    padding: 2px 10px 2px 10px;
+    background-color: #fff1f3;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0em;
+    text-align: center;
+    color: #c01048;
+    border-radius: 16px;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    -ms-border-radius: 16px;
+    -o-border-radius: 16px;
+}
+
+.ticketList .status .closed {
+    padding: 2px 10px 2px 10px;
+    background-color: #ECFDF3;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0em;
+    text-align: center;
+    color: #027A48;
+    border-radius: 16px;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    -ms-border-radius: 16px;
+    -o-border-radius: 16px;
+}
+
+.ticketList table thead tr th:nth-child(2) {
+    width: 161px;
+}
+
+.ticketList table thead tr th:nth-child(4) {
+    width: 172px;
+}
+
+.ticketList table thead tr th:nth-child(5) {
+    width: 290px;
+}
+
+.ticketList table thead tr th:nth-child(6) {
+    width: 140px;
+}

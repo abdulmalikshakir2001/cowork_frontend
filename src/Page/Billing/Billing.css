@@ -1,0 +1,168 @@
+.billingList {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    height: calc(100vh - 224px);
+}
+
+.billingList .table-responsive {
+    width: 100%;
+}
+
+.billingList table thead tr th {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: #475467;
+    height: 56px;
+    vertical-align: middle;
+    white-space: nowrap;
+    background-color: #F4F7F8;
+}
+
+.billingList table tbody tr td {
+    height: 72px;
+    text-align: left;
+}
+
+.billingList table thead tr th:nth-child(1),
+.billingList table tbody tr td:nth-child(1) {
+    width: 68px;
+    text-align: center;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(2),
+.billingList table tbody tr td:nth-child(2) {
+    width: 119px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(3),
+.billingList table tbody tr td:nth-child(3) {
+    width: 210px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(4),
+.billingList table tbody tr td:nth-child(4) {
+    width: 186px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(5),
+.billingList table tbody tr td:nth-child(5) {
+    width: 170px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(6),
+.billingList table tbody tr td:nth-child(6) {
+    width: 124px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(7),
+.billingList table tbody tr td:nth-child(7) {
+    width: 119px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table thead tr th:nth-child(8),
+.billingList table tbody tr td:nth-child(8) {
+    width: 99px;
+    padding: 0px !important;
+    position: relative;
+    vertical-align: middle;
+}
+
+.billingList table tbody tr td:nth-child(2) {
+    font-family: "Inter";
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: rgba(16, 24, 40, 1);
+}
+
+.billingList table tbody tr td:nth-child(3),
+.billingList table tbody tr td:nth-child(4),
+.billingList table tbody tr td:nth-child(5),
+.billingList table tbody tr td:nth-child(7) {
+    font-family: "Inter";
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: rgba(71, 84, 103, 1);
+}
+
+.billingList table tbody tr td:nth-child(3) img,
+.billingList table tbody tr td:nth-child(4) img,
+.billingList table tbody tr td:nth-child(5) img {
+    margin-right: 8px;
+}
+
+.billingList .status span {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0em;
+    text-align: center;
+    width: auto;
+    padding: 5px 10px;
+    margin-bottom: 0px;
+    border-radius: 16px;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    -ms-border-radius: 16px;
+    -o-border-radius: 16px;
+}
+
+.billingList .status .paid {
+    color: rgba(2, 122, 72, 1);
+    background: rgba(236, 253, 243, 1);
+}
+
+.billingList .status .unpaid {
+    color: #C01048;
+    background: #FFF1F3;
+}
+
+.billingList .status .draft {
+    color: rgba(52, 64, 84, 1);
+    background: rgba(242, 244, 247, 1);
+}
+
+.billingAction .download,
+.billingAction .download:hover {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgba(99, 102, 241, 1)
+}
+.billingAction .view,
+.billingAction .view:hover {
+    box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+    background: rgba(99, 102, 241, 1);
+
+}
