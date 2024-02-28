@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { faPaperPlane } from "@fortawesome/free-regular-svg-icons";
 import { useAppSelector, useAppDispatch } from "../../lib/hooks";
+
 import {
   selectAuthUser,
   setAuthUser,
@@ -23,8 +24,13 @@ import { useSocket } from "../../providers/Socket";
 import { MdGroup } from "react-icons/md";
 import { IconContext } from "react-icons";
 import Group from "../Groups/Group";
+import defaultChatImg from "../../Assets/Images/chat/default_chat_page.png";
+import { Dropdown } from "react-bootstrap";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { json } from "react-router-dom";
 
 interface IChatMessage {
+  id: number ;
   email: string;
   message: string;
 }
@@ -43,46 +49,55 @@ const Messenger = () => {
   const [chatMessage, setChatMessage] = useState<string[]>([]);
   const [bothChatMessages, setBothChatMessages] = useState<IChatMessage[]>([]);
   const [userOnline, setUserOnline] = useState<string | null>(null);
-
   const [input, setInput] = useState<string>(""); // current user message -->focus
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [currentUserMessages, setCurrentUserMessages] = useState<string[] | []>(
     []
   );
   const [distUserMessages, setDistUserMessages] = useState<string[] | []>([]);
-
   const [contacts, setContacts] = useState<IUserState[]>();
   const [showChats, setShowChats] = useState(false);
-  
+
   // group start
-  const [showGroupName,setShowGroupName] = useState(false)
-  const [changeGroupName, setChangeGroupName] =useState<string|undefined>(undefined);
-  const [showGroupSaveButton,setShowGroupSaveButton] = useState(true)
-  const [showGroups,setShowGroups] = useState(false);
-  const[lastInsertedGroupId,setLastInsertedGroupId] = useState<number|string|null>(null)
-  const [allGroups,setAllGroups] = useState<any>(null);
-  const [groupId,setGroupId] = useState<any>(null);
-    const  handleShowGroupNameChange = ()=>{
-      setChangeGroupName("")
-      setShowGroupSaveButton(true)
-      setShowGroupName(true)
-    }
-    const  handleSaveGroupName = ()=>{
-      post('/saveGroup',{name:changeGroupName,created_by:currentUser.email}).then((data)=>{
-        setShowGroupSaveButton(false)
-        
-        console.log(data)
-        if(data.statusCode === 201){
-          setLastInsertedGroupId(data.lastInsertedGroupId)
-          setShowGroups(true)
-          setShowChats(false)
-          
-        }
-      })
-    }
+  const [showGroupName, setShowGroupName] = useState(false);
+  const [changeGroupName, setChangeGroupName] = useState<string | undefined>(
+    undefined
+  );
+  const [showGroupSaveButton, setShowGroupSaveButton] = useState(true);
+  const [showGroups, setShowGroups] = useState(false);
+  const [showDefaultChatPage, setShowDefaultChatPage] = useState(true);
+  const [chatDeleted, setChatDeleted] = useState(false);
+  
+  const [showDeleteIcon, setShowDeleteIcon] = useState(true);
+  const [selectedUserOnlineStatus, setSelectedUserOnlineStatus] =
+    useState(false);
+  const [lastInsertedGroupId, setLastInsertedGroupId] = useState<
+    number | string | null
+  >(null);
+  const [allGroups, setAllGroups] = useState<any>(null);
+  const [groupId, setGroupId] = useState<any>(null);
 
+  const handleShowGroupNameChange = () => {
+    setChangeGroupName("");
+    setShowGroupSaveButton(true);
+    setShowGroupName(true);
+  };
+  const handleSaveGroupName = () => {
+    post("/saveGroup", {
+      name: changeGroupName,
+      created_by: currentUser.email,
+    }).then((data) => {
+      setShowGroupSaveButton(false);
+
+      console.log(data);
+      if (data.statusCode === 201) {
+        setLastInsertedGroupId(data.lastInsertedGroupId);
+        setShowGroups(true);
+        setShowChats(false);
+      }
+    });
+  };
   // group end
-
   useEffect(() => {
     scrollToBottom();
   }, [messages, input]);
@@ -95,15 +110,18 @@ const Messenger = () => {
   };
 
   const handleSelectUser = (selectedUser: IUserState) => {
-    setShowGroups(false)
-    
+    setShowGroups(false);
+    setShowDefaultChatPage(false);
     setSelectedUser(selectedUser);
-    
-
     setSelectedUserName(selectedUser.name);
     setSelectedUserRole(selectedUser.role);
-    setShowChats(true)
-    
+    if (selectedUser.online_status === 0) {
+      setSelectedUserOnlineStatus(false);
+    } else if (selectedUser.online_status === 1) {
+      setSelectedUserOnlineStatus(true);
+    }
+    setShowChats(true);
+
     // current
 
     post("/getAllChats", {
@@ -117,6 +135,8 @@ const Messenger = () => {
     // current
 
     setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
+    
+    
     // socket?.emit('recieverMessage',{email:selectedUser?.email,message:data.message})
   }, []);
   const handleToDist = useCallback((data: any) => {
@@ -134,6 +154,7 @@ const Messenger = () => {
   }, []);
   const handleUserOffline = useCallback((data: any) => {
     setUserOnline("offline");
+    setSelectedUserOnlineStatus(false);
   }, []);
 
   const messageStart = () => {
@@ -142,28 +163,40 @@ const Messenger = () => {
       setInput("");
     }
 
-    post("/saveChat", {
-      sender: currentUser.email,
-      reciever: selectedUser?.email,
-      message: input,
-    }).then((data) => {
-      console.log(data);
-    });
+    
     socket?.emit("senderMessage", {
       sender: currentUser.email,
       reciever: selectedUser?.email,
       message: input,
+      id:currentUser.id
     });
   };
 
-  const handleSelectedGroup = (group:any)=>{
-    setGroupId(group.group_id) 
+  const handleSelectedGroup = (group: any) => {
+    setGroupId(group.group_id);
+
+    setShowGroups(true);
+    setShowDefaultChatPage(false);
+    setShowChats(false);
+  };
+
+
+
+   const  handleChatDeleted = (data:any)=>{
+    post("/getAllChats", {
+      sender: data.currentUserEmail ,
+      reciever: data.email,
+    }).then((data) => {
+      setBothChatMessages(data);
+    });
     
-    setShowGroups(true)
-    setShowChats(false)
+    
     
 
+    
   }
+
+
   useEffect(() => {
     socket?.emit("userLogin", currentUser);
   }, [currentUser, socket]);
@@ -174,6 +207,7 @@ const Messenger = () => {
     socket?.on("online", handleOnline);
     socket?.on("userOnline", handleUserOnline);
     socket?.on("userOffline", handleUserOffline);
+    socket?.on("chatDeleted", handleChatDeleted);
 
     return () => {
       socket?.off("toSender", handleToSender);
@@ -181,6 +215,8 @@ const Messenger = () => {
       socket?.off("online", handleOnline);
       socket?.off("userOnline", handleUserOnline);
       socket?.off("userOffline", handleUserOffline);
+    socket?.off("chatDeleted", handleChatDeleted);
+
     };
   }, [
     handleOnline,
@@ -205,44 +241,66 @@ const Messenger = () => {
       );
   }, [currentUser, userOnline]);
 
-  useEffect(()=>{
+  useEffect(() => {
     currentUser.email &&
       post("/allGroups", { currentUserEmail: currentUser.email }).then(
         (data) => {
-          setAllGroups(data)
-          
+          setAllGroups(data);
         }
       );
+  }, [currentUser.email]);
 
-  },[currentUser.email])
-  
-
-  useEffect(()=>{
-    post('/saveGroupMember',{email:currentUser.email,group_id:lastInsertedGroupId}).then((data)=>{
-      if(data.statusCode===201){
+  useEffect(() => {
+    post("/saveGroupMember", {
+      email: currentUser.email,
+      group_id: lastInsertedGroupId,
+    }).then((data) => {
+      if (data.statusCode === 201) {
         // socket?.emit('joinRoom',{email:currentUser.email,groupId:data.group_id})
         currentUser.email &&
-      post("/allGroups", { currentUserEmail: currentUser.email }).then(
-        (data) => {
-          setAllGroups(data)
-          
-        }
-      );
-        handleSelectedGroup({group_id:data.group_id})
+          post("/allGroups", { currentUserEmail: currentUser.email }).then(
+            (data) => {
+              setAllGroups(data);
+            }
+          );
+        handleSelectedGroup({ group_id: data.group_id });
       }
-    })
-  },[currentUser.email, lastInsertedGroupId, socket])
-  
+    });
+  }, [currentUser.email, lastInsertedGroupId, socket]);
+  // const handleDeleteMessage = (index: any) => {
+  //   alert("chat mesage" + index + "deleted");
+  // };
+  interface DeleteIcons {
+    [key: number]: boolean;
+  }
+  const [deleteIcons, setDeleteIcons] = useState<DeleteIcons>({});
+
+  const handleMouseEnter = (index: any) => {
+    
+    
+    
+    setDeleteIcons({ ...deleteIcons, [index]: true });
+  };
+
+  const handleMouseLeave = (index: any) => {
+    setDeleteIcons({ ...deleteIcons, [index]: false });
+  };
+  const handleDeleteMessage = (id: any) => {
+    socket?.emit("deleteSingleChat", { id ,email:selectedUser?.email,currentUserEmail:currentUser.email});
+  };
+
   return (
-  
     <Layout>
       <div className="mainContent">
         <div className="chat">
           {/* current */}
-          <div className="contacts">
+          <div className="contacts custom_scroll">
             <div className="all-messages-parent">
               <div className="all-messages">All Messages</div>
-              <div className="button showGroupNameButton" onClick={handleShowGroupNameChange}>
+              <div
+                className="button showGroupNameButton"
+                onClick={handleShowGroupNameChange}
+              >
                 {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
                 <FontAwesomeIcon icon={faPlus} />
               </div>
@@ -250,104 +308,106 @@ const Messenger = () => {
             <div className="contacts-child" />
             {/* group */}
 
-            {showGroupName &&  <div className="group-name-wrapper">
-            <div
-              className="group-name-parent"
-              style={{
-                backgroundColor: "#F8FAFB",
-              }}
-            >
-              { showGroupSaveButton && <span className="badge position_absolute"  style={{cursor:"pointer"}} onClick={handleSaveGroupName} >save</span> }
-              <div className="center-group-badge" >
-              
-              <div className="group-name-icon-parent">
+            {showGroupName && (
+              <div className="group-name-wrapper">
+                <div
+                  className="group-name-parent"
+                  style={{
+                    backgroundColor: "#F8FAFB",
+                  }}
+                >
+                  {showGroupSaveButton && (
+                    <span
+                      className="badge position_absolute"
+                      style={{ cursor: "pointer" }}
+                      onClick={handleSaveGroupName}
+                    >
+                      save
+                    </span>
+                  )}
+                  <div className="center-group-badge">
+                    <div className="group-name-icon-parent">
+                      <IconContext.Provider
+                        value={{
+                          color: "black",
+                          className: "global-class-name",
+                          size: "2em",
+                        }}
+                      >
+                        <div>
+                          <MdGroup />
+                        </div>
+                      </IconContext.Provider>
 
-                
-                  <IconContext.Provider
-                    value={{ color: "black", className: "global-class-name",size:"2em"}}
-                  >
-                    <div>
-                      <MdGroup />
+                      <div className="text">
+                        <div style={{ color: "black" }}>
+                          <input
+                            type="text"
+                            value={changeGroupName}
+                            className="changeGroupName"
+                            placeholder="Edit group Name"
+                            onChange={(e) => setChangeGroupName(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </IconContext.Provider>
-
-                <div className="text">
-                  <div style={{ color: "black" }}>
-                    <input
-                      type="text"
-                      value={changeGroupName}
-                      className="changeGroupName"
-                      placeholder="Edit group Name"
-                      onChange={(e) => setChangeGroupName(e.target.value)}
-                    />
                   </div>
                 </div>
-
               </div>
-              </div>
-            </div>
-            </div>
-}
+            )}
             {/* all group */}
 
-
-          { allGroups &&   allGroups.map((group:any)=>{
-            return (
-              <div
-              className="contact1"
-              style={{margin:"auto"}}
-              onClick={ () => handleSelectedGroup(group)}
-              
-              key={group.email}
-              // style={{
-              //   backgroundColor:
-              //     selectedUser === contact ? "#6366F1" : "white",
-              // }}
-            >
-              <div className="avatar-parent">
-                
-                <IconContext.Provider
-                    value={{ color: "black", className: "global-class-name",size:"2em"}}
-                  >
-                    <div>
-                      <MdGroup />
-                    </div>
-                  </IconContext.Provider>
-                  
-                  
-                
-
-                <div className="text">
+            {allGroups &&
+              allGroups.map((group: any) => {
+                return (
                   <div
-                    // className={
-                    //   selectedUser === contact
-                    //     ? ""
-                    //     : "bogdan-krivenchenko"
-                    // }
-                    // style={
-                    //   selectedUser === contact ? { color: "white" } : {}
-                    // }
+                    className="contact1"
+                    style={{ margin: "auto" }}
+                    onClick={() => handleSelectedGroup(group)}
+                    key={group.email}
+                    // style={{
+                    //   backgroundColor:
+                    //     selectedUser === contact ? "#6366F1" : "white",
+                    // }}
                   >
-                    {group.group_name}
+                    <div className="avatar-parent">
+                      <IconContext.Provider
+                        value={{
+                          color: "black",
+                          className: "global-class-name",
+                          size: "2em",
+                        }}
+                      >
+                        <div>
+                          <MdGroup />
+                        </div>
+                      </IconContext.Provider>
+
+                      <div className="text">
+                        <div
+                        // className={
+                        //   selectedUser === contact
+                        //     ? ""
+                        //     : "bogdan-krivenchenko"
+                        // }
+                        // style={
+                        //   selectedUser === contact ? { color: "white" } : {}
+                        // }
+                        >
+                          {group.group_name}
+                        </div>
+                        <div className="hi-how-are">
+                          Hi! this is {group.group_name}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="parent">
+                      <div className="div16">10:30 AM</div>
+                      <div className="ellipse" />
+                    </div>
                   </div>
-                  <div className="hi-how-are">
-                    Hi! this is {group.group_name}
-                  </div>
-                </div>
-              </div>
-              <div className="parent">
-                <div className="div16">10:30 AM</div>
-                <div className="ellipse" />
-              </div>
-            </div>
-
-              
-
-
-
-            )
-          }) 
-}
+                );
+              })}
             {/* all group */}
 
             {/* group */}
@@ -406,10 +466,111 @@ const Messenger = () => {
                 })}
             </div>
           </div>
-          {
-            showGroups && <Group lastInsertedGroupId={lastInsertedGroupId}  groupId={groupId && groupId}/>
-          }
-           { selectedUser && showChats && (
+
+          {/* default  */}
+          {showDefaultChatPage && (
+            <div className="chat1">
+              <div className="user-header">
+                <div className="user-parent">
+                  <div className="user">
+                    {/* custom dropdown */}
+
+                    <Dropdown>
+                      <Dropdown.Toggle id="user_drop_down">To</Dropdown.Toggle>
+                      <Dropdown.Menu
+                        id="user_drop_down_menu"
+                        className="custom_scroll"
+                      >
+                        {contacts &&
+                          contacts.map((contact) => {
+                            return (
+                              <Dropdown.Item href="#">
+                                <div
+                                  className="avatar-parent"
+                                  onClick={() => handleSelectUser(contact)}
+                                >
+                                  <div className="avatar">
+                                    <img
+                                      className="avatar-icon1"
+                                      alt=""
+                                      src={avatar}
+                                    />
+                                    <div className="avatar-online-indicator">
+                                      <img alt="" src="" />
+                                    </div>
+                                  </div>
+
+                                  <div className="text">
+                                    <div>{contact.name}</div>
+                                  </div>
+                                </div>
+                              </Dropdown.Item>
+                            );
+                          })}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </div>
+                  <img className="more-icon" alt="" src={more} />
+                </div>
+              </div>
+
+              <div className="chat2 custom_scroll" ref={chatContainerRef}>
+                <div className="friday-january-26th-parent">
+                  <img
+                    src={defaultChatImg}
+                    alt="default chat image"
+                    className="default_chat_img"
+                  />
+                </div>
+              </div>
+              <div className="avatar-parent7">
+                <img className="avatar-icon" alt="" src={avatar} />
+                <div className="input-field">
+                  <div className="input-with-label">
+                    <div className="label1">Email Address</div>
+                    <div className="input">
+                      <img
+                        className="search-md-icon"
+                        alt=""
+                        src="/searchmd.svg"
+                      />
+                      <div className="content3">
+                        <textarea
+                          className="text9 form-control"
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          placeholder="Send a message..."
+                        />
+                      </div>
+                      <FontAwesomeIcon
+                        className="info-circle-icon"
+                        onClick={messageStart}
+                        icon={faPaperPlane}
+                      />
+                      <img className="info-circle-icon" alt="" src={emoji} />
+                      <img
+                        className="info-circle-icon"
+                        alt=""
+                        src={fileShare}
+                      />
+                    </div>
+                  </div>
+                  <div className="hint-text">
+                    This is a hint text to help user.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* default  */}
+
+          {showGroups && (
+            <Group
+              lastInsertedGroupId={lastInsertedGroupId}
+              groupId={groupId && groupId}
+            />
+          )}
+          {selectedUser && showChats && (
             <div className="chat1">
               <div className="user-header">
                 <div className="user-parent">
@@ -417,9 +578,12 @@ const Messenger = () => {
                     <div className="avatar-parent6">
                       <div className="avatar1">
                         <img className="avatar-icon1" alt="" src={avatar} />
-                        <div className="avatar-online-indicator">
-                          <img alt="" src={onlineShow} />
-                        </div>
+
+                        {selectedUserOnlineStatus && (
+                          <div className="avatar-online-indicator">
+                            <img alt="" src={onlineShow} />
+                          </div>
+                        )}
                       </div>
                       <div className="dropdown">
                         <div className="sarah-kline">{selectedUserName}</div>
@@ -431,7 +595,7 @@ const Messenger = () => {
                 </div>
               </div>
 
-              <div className="chat2" ref={chatContainerRef}>
+              <div className="chat2 custom_scroll" ref={chatContainerRef}>
                 <div className="friday-january-26th-parent">
                   <div className="friday-january-26th">
                     Friday, January 26th
@@ -440,7 +604,7 @@ const Messenger = () => {
                   {bothChatMessages.map((data) => {
                     if (data.email === selectedUser.email) {
                       return (
-                        <div className="div24">
+                        <div className="div24 single_dist_chat">
                           <div className="message">
                             <div className="avatar1">
                               <img
@@ -452,8 +616,12 @@ const Messenger = () => {
                                 <img alt="" src={onlineShow} />
                               </div>
                             </div>
-                            <div className="message1">
-                              <div className="hihow-are-things-with-our-ill-wrapper">
+                            <div
+                              className="message1"
+                              
+                            >
+                              <div className="hihow-are-things-with-our-ill-wrapper ">
+                              
                                 <div className="hihow-are-things">
                                   {data.message}
                                 </div>
@@ -468,8 +636,23 @@ const Messenger = () => {
                     } else {
                       return (
                         <div className="message7">
-                          <div className="message8">
-                            <div className="hi-im-working-on-the-final-sc-wrapper">
+                          <div className="message8"
+                          onMouseEnter={() => handleMouseEnter(data.id)}
+                          onMouseLeave={() => handleMouseLeave(data.id)}
+                          >
+                            <div className="hi-im-working-on-the-final-sc-wrapper for_delete">
+                            { deleteIcons[data.id] && (
+                                  <div className="delete_button">
+                                    <RiDeleteBin6Line
+                                      className="delete-icon"
+                                      onClick={() =>
+                                        handleDeleteMessage(data.id)
+                                      }
+                                    />
+                                  </div>
+                                )}
+
+
                               <div className="hihow-are-things">
                                 {data.message}
                               </div>
@@ -484,56 +667,46 @@ const Messenger = () => {
                     }
                   })}
                 </div>
-                <div className="avatar-parent7">
-                  <img className="avatar-icon" alt="" src={avatar} />
-                  <div className="input-field">
-                    <div className="input-with-label">
-                      <div className="label1">Email Address</div>
-                      <div className="input">
-                        <img
-                          className="search-md-icon"
-                          alt=""
-                          src="/searchmd.svg"
-                        />
-                        <div className="content3">
-                          <textarea
-                            className="text9 form-control"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="Send a message..."
-                          />
-                        </div>
-                        <FontAwesomeIcon
-                          className="info-circle-icon"
-                          onClick={messageStart}
-                          icon={faPaperPlane}
-                        />
-                        <img className="info-circle-icon" alt="" src={emoji} />
-                        <img
-                          className="info-circle-icon"
-                          alt=""
-                          src={fileShare}
+              </div>
+              <div className="avatar-parent7">
+                <img className="avatar-icon" alt="" src={avatar} />
+                <div className="input-field">
+                  <div className="input-with-label">
+                    <div className="label1">Email Address</div>
+                    <div className="input">
+                      <img
+                        className="search-md-icon"
+                        alt=""
+                        src="/searchmd.svg"
+                      />
+                      <div className="content3">
+                        <textarea
+                          className="text9 form-control"
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          placeholder="Send a message..."
                         />
                       </div>
+                      <FontAwesomeIcon
+                        className="info-circle-icon"
+                        onClick={messageStart}
+                        icon={faPaperPlane}
+                      />
+                      <img className="info-circle-icon" alt="" src={emoji} />
+                      <img
+                        className="info-circle-icon"
+                        alt=""
+                        src={fileShare}
+                      />
                     </div>
-                    <div className="hint-text">
-                      This is a hint text to help user.
-                    </div>
+                  </div>
+                  <div className="hint-text">
+                    This is a hint text to help user.
                   </div>
                 </div>
               </div>
             </div>
           )}
-          
-
-          
-
-
-          
-
-                
-
-
         </div>
       </div>
     </Layout>

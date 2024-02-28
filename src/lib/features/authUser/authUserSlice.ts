@@ -6,7 +6,7 @@ import { features } from 'process';
 // Define a type for the slice state
 export interface IUserState {
   
-  
+  id?:number|null
    name:string|null;
    email:string|null;
    role:string|null;
@@ -22,6 +22,7 @@ export interface IinitialState {
 // Define the initial state using that type
 const initialState:IinitialState = {
     user:{
+      id:null,
     name:null,
   email:null,
    role:null,

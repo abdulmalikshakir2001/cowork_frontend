@@ -133,7 +133,7 @@ useEffect(()=>{
   />
               </div>
 
-              <div className="chat2" ref={chatContainerRef}>
+              <div className="chat2 custom_scroll" ref={chatContainerRef}>
                 <div className="friday-january-26th-parent">
                   <div className="friday-january-26th">
                     Friday, January 26th
@@ -207,7 +207,9 @@ useEffect(()=>{
                   
 
                 </div>
-                <div className="avatar-parent7">
+                
+              </div>
+              <div className="avatar-parent7">
                   <img className="avatar-icon" alt="" src={avatar} />
                   <div className="input-field">
                     <div className="input-with-label">
@@ -244,7 +246,6 @@ useEffect(()=>{
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
         
       

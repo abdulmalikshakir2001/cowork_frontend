@@ -10,10 +10,31 @@
     border-radius: var(--br-mini) 0 0 var(--br-mini);
     background-color: white;
     border-right: 2px solid var(--brand-divider);
-    overflow: hidden;
+    
     padding: var(--padding-13xl) 0;
     gap: var(--gap-5xl);
     height: 100%;
+    overflow: auto;
+    
+}
+.custom_scroll::-webkit-scrollbar{
+    width: 10px;
+    
+}
+.custom_scroll::-webkit-scrollbar-track {
+    background-color: #F0F4F6; /* Change to desired background color */
+    border-radius: 10px;
+}
+
+/* Style the scrollbar thumb */
+.custom_scroll::-webkit-scrollbar-thumb {
+    background-color: #dbe0e2; /* Change to desired thumb color */
+    border-radius: 10px;
+}
+
+/* Style the scrollbar when hovered */
+.custom_scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Change to desired thumb hover color */
 }
 
 .contact,
@@ -1105,4 +1126,30 @@
   
   /* group end */
   
+  .default_chat_img{
+    height: 300px;
+  }
+  #user_drop_down{
+    width: 300px;
+    background-color: transparent;
+    color: black;
+    text-align: start;
+    border: none;
+  }
+  #user_drop_down_menu{
+    height: 300px;
+    overflow: auto;
+    min-width:300px ;
+  }
+  .for_delete{
+    position: relative;
+    
+  }
+  .delete_button{
+    color: black;
+    position: absolute;
+    left: 10px;
+    bottom: 37px;
+    cursor: pointer;
+  }
   
