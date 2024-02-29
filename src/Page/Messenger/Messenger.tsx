@@ -36,6 +36,7 @@ interface IChatMessage {
 }
 
 const Messenger = () => {
+  const singleChatDivRef = useRef<HTMLDivElement>(null);
   const currentUser = useAppSelector(selectAuthUser); // this object contain email,role,name -->focus
   const [selectedUser, setSelectedUser] = useState<IUserState>(); // this object contain email,role,name -->focus
   const [distUserEmail, setDistUserEmail] = useState<string | null>(null);
@@ -135,6 +136,13 @@ const Messenger = () => {
     // current
 
     setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
+    // After content is loaded
+    
+
+    
+    
+
+
     
     
     // socket?.emit('recieverMessage',{email:selectedUser?.email,message:data.message})
@@ -288,6 +296,12 @@ const Messenger = () => {
   const handleDeleteMessage = (id: any) => {
     socket?.emit("deleteSingleChat", { id ,email:selectedUser?.email,currentUserEmail:currentUser.email});
   };
+
+
+  useEffect(()=>{
+    singleChatDivRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+  },[bothChatMessages])
 
   return (
     <Layout>
@@ -595,7 +609,7 @@ const Messenger = () => {
                 </div>
               </div>
 
-              <div className="chat2 custom_scroll" ref={chatContainerRef}>
+              <div className="chat2 custom_scroll">
                 <div className="friday-january-26th-parent">
                   <div className="friday-january-26th">
                     Friday, January 26th
@@ -667,6 +681,8 @@ const Messenger = () => {
                     }
                   })}
                 </div>
+
+                <div ref={singleChatDivRef}></div>
               </div>
               <div className="avatar-parent7">
                 <img className="avatar-icon" alt="" src={avatar} />
