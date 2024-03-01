@@ -77,6 +77,9 @@ const Messenger = () => {
   >(null);
   const [allGroups, setAllGroups] = useState<any>(null);
   const [groupId, setGroupId] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+  const [checkSelectedGroup, setCheckSelectedGroup] = useState<null | boolean>(null);
+
 
   const handleShowGroupNameChange = () => {
     setChangeGroupName("");
@@ -111,11 +114,22 @@ const Messenger = () => {
   };
 
   const handleSelectUser = (selectedUser: IUserState) => {
+
+    
+    
+    
+    
     setShowGroups(false);
+    
     setShowDefaultChatPage(false);
     setSelectedUser(selectedUser);
     setSelectedUserName(selectedUser.name);
     setSelectedUserRole(selectedUser.role);
+    setCheckSelectedGroup(true)
+
+    
+
+
     if (selectedUser.online_status === 0) {
       setSelectedUserOnlineStatus(false);
     } else if (selectedUser.online_status === 1) {
@@ -181,7 +195,10 @@ const Messenger = () => {
   };
 
   const handleSelectedGroup = (group: any) => {
+    setCheckSelectedGroup(null)
+    setSelectedGroup(group)
     setGroupId(group.group_id);
+    
 
     setShowGroups(true);
     setShowDefaultChatPage(false);
@@ -303,6 +320,11 @@ const Messenger = () => {
 
   },[bothChatMessages])
 
+  useEffect(()=>{
+    console.log(selectedGroup)
+
+  },[selectedGroup])
+
   return (
     <Layout>
       <div className="mainContent">
@@ -369,20 +391,23 @@ const Messenger = () => {
                 </div>
               </div>
             )}
-            {/* all group */}
-
             {allGroups &&
               allGroups.map((group: any) => {
                 return (
                   <div
                     className="contact1"
-                    style={{ margin: "auto" }}
+                    style={{ margin: "auto",
+                    
+                      backgroundColor:
+                      checkSelectedGroup !== null ? "" :  selectedGroup === group ? "#6366F1" : "white",
+                      
+                    
+                   }}
                     onClick={() => handleSelectedGroup(group)}
                     key={group.email}
-                    // style={{
-                    //   backgroundColor:
-                    //     selectedUser === contact ? "#6366F1" : "white",
-                    // }}
+                    
+
+                    
                   >
                     <div className="avatar-parent">
                       <IconContext.Provider
@@ -399,14 +424,14 @@ const Messenger = () => {
 
                       <div className="text">
                         <div
-                        // className={
-                        //   selectedUser === contact
-                        //     ? ""
-                        //     : "bogdan-krivenchenko"
-                        // }
-                        // style={
-                        //   selectedUser === contact ? { color: "white" } : {}
-                        // }
+                        className={
+                          selectedGroup === group
+                            ? ""
+                            : "bogdan-krivenchenko"
+                        }
+                        style={
+                          selectedGroup === group ? { color: "white" } : {}
+                        }
                         >
                           {group.group_name}
                         </div>
@@ -422,9 +447,9 @@ const Messenger = () => {
                   </div>
                 );
               })}
-            {/* all group */}
 
             {/* group */}
+
             <div className="contact">
               {contacts &&
                 contacts.map((contact) => {
@@ -435,7 +460,7 @@ const Messenger = () => {
                       key={contact.email}
                       style={{
                         backgroundColor:
-                          selectedUser === contact ? "#6366F1" : "white",
+                        checkSelectedGroup === null ? "" : selectedUser === contact ? "#6366F1" : "white",
                       }}
                     >
                       <div className="avatar-parent">
