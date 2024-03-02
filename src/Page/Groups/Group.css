@@ -1139,3 +1139,15 @@
     gap: 10px;
 
 }
+.for_delete{
+    position: relative;
+    
+  }
+  .delete_button_group{
+    color: black;
+    position: absolute;
+    left: 10px;
+    bottom: 57px;
+    cursor: pointer;
+  }
+  

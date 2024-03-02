@@ -79,6 +79,8 @@ const Messenger = () => {
   const [groupId, setGroupId] = useState<any>(null);
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [checkSelectedGroup, setCheckSelectedGroup] = useState<null | boolean>(null);
+  
+
 
 
   const handleShowGroupNameChange = () => {
@@ -316,6 +318,7 @@ const Messenger = () => {
     setDeleteIcons({ ...deleteIcons, [index]: false });
   };
   const handleDeleteMessage = (id: any) => {
+
     socket?.emit("deleteSingleChat", { id ,email:selectedUser?.email,currentUserEmail:currentUser.email});
   };
 
@@ -410,7 +413,7 @@ const Messenger = () => {
                     
                    }}
                     onClick={() => handleSelectedGroup(group)}
-                    key={group.email}
+                    key={group.id}
                     
 
                     
@@ -463,7 +466,7 @@ const Messenger = () => {
                     <div
                       className="contact1"
                       onClick={() => handleSelectUser(contact)}
-                      key={contact.email}
+                      key={contact.id}
                       style={{
                         backgroundColor:
                         checkSelectedGroup === null ? "" : selectedUser === contact ? "#6366F1" : "white",
@@ -529,7 +532,7 @@ const Messenger = () => {
                         {contacts &&
                           contacts.map((contact) => {
                             return (
-                              <Dropdown.Item href="#">
+                              <Dropdown.Item href="#" key={contact.id}>
                                 <div
                                   className="avatar-parent"
                                   onClick={() => handleSelectUser(contact)}
@@ -613,6 +616,7 @@ const Messenger = () => {
               lastInsertedGroupId={lastInsertedGroupId}
               groupId={groupId && groupId}
               
+              
             />
           )}
           {selectedUser && showChats && (
@@ -649,7 +653,7 @@ const Messenger = () => {
                   {bothChatMessages.map((data) => {
                     if (data.email === selectedUser.email) {
                       return (
-                        <div className="div24 single_dist_chat">
+                        <div className="div24 single_dist_chat" key={data.id}>
                           <div className="message">
                             <div className="avatar1">
                               <img
@@ -682,10 +686,12 @@ const Messenger = () => {
                       return (
                         <div className="message7">
                           <div className="message8"
-                          onMouseEnter={() => handleMouseEnter(data.id)}
-                          onMouseLeave={() => handleMouseLeave(data.id)}
+                          
                           >
-                            <div className="hi-im-working-on-the-final-sc-wrapper for_delete">
+                            <div className="hi-im-working-on-the-final-sc-wrapper for_delete"
+                            onMouseEnter={() => handleMouseEnter(data.id)}
+                            onMouseLeave={() => handleMouseLeave(data.id)}
+                            >
                             { deleteIcons[data.id] && (
                                   <div className="delete_button">
                                     <RiDeleteBin6Line

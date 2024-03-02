@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import avatar from "../../Assets/Images/icon/Avatar.png";
 import onlineShow from "../../Assets/Images/icon/online.png";
 import more from "../../Assets/Images/icon/more.png";
@@ -14,8 +14,9 @@ import { useAppSelector } from "../../lib/hooks";
 import { useSocket } from "../../providers/Socket";
 import "./Group.css";
 import { group } from "console";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
-function Group({ lastInsertedGroupId, groupId }: any) {
+function Group({ lastInsertedGroupId, groupId  }: any) {
   
   const singleChatDivRef = useRef<HTMLDivElement>(null);
   
@@ -43,6 +44,8 @@ function Group({ lastInsertedGroupId, groupId }: any) {
     }).then((data) => {
       if (data.statusCode === 201) {
         alert('user added in the group')
+        socket?.emit('userAddedToGroup',data)
+        
       }
     });
   };
@@ -60,12 +63,14 @@ function Group({ lastInsertedGroupId, groupId }: any) {
       callBack(filtered_data);
     });
   };
-  const handleSenderMessageGroup = (data: any) => {
+
+
+  const handleSenderMessageGroup = useCallback( (data: any) => {
     setContacts((prev) => [...prev, data]);
-  };
-  const toRecieversGroup = (data: any) => {
+  },[]);
+  const toRecieversGroup = useCallback( (data: any) => {
     setContacts((prev) => [...prev, data]);
-  };
+  },[]);
 
   useEffect(() => {
     console.log(selectedOptions);
@@ -77,11 +82,11 @@ function Group({ lastInsertedGroupId, groupId }: any) {
     
     
     setShowUserGroup(false)
-    post("/saveGroupChats", {
-      email: currentUser.email,
-      message: input,
-      group_id: groupId,
-    });
+    // post("/saveGroupChats", {
+    //   email: currentUser.email,
+    //   message: input,
+    //   group_id: groupId,
+    // });
 
     socket?.emit("senderMessageSend", {
       email: currentUser.email,
@@ -89,28 +94,52 @@ function Group({ lastInsertedGroupId, groupId }: any) {
       groupId,
     });
   };
+  const  handleGroupChatDeleted = useCallback( (data:any)=>{
+    
+    post("/getAllGroupChats", { group_id: data.groupId }).then((data) => {
+      setContacts(data);
+    });
+    
+    
+
+    
+  },[])
+  const handleContactsLoaded = useCallback( (data:any)=>{
+    // current
+    alert('groups loaded')
+    
+  
+    
+  },[])
+  
+  
 
   useEffect(() => {
     socket?.on("senderMessageGroup", handleSenderMessageGroup);
-    socket?.on("toRecieversGroup", toRecieversGroup);
+    socket?.on("toRecieversMessageGroup", toRecieversGroup);
     socket?.emit("joinRoom", { email: currentUser.email, groupId });
+    socket?.on("groupChatDeleted", handleGroupChatDeleted);
+    socket?.on("relay", handleContactsLoaded);
+    
 
     return () => {
       socket?.off("senderMessageGroup", handleSenderMessageGroup);
-      socket?.off("toRecieversGroup", toRecieversGroup);
+      socket?.off("toRecieversMessageGroup", toRecieversGroup);
+    socket?.off("groupChatDeleted", handleGroupChatDeleted);
+    socket?.off("relay", handleContactsLoaded);
+    
+
+
+    
+
     };
-  }, [currentUser.email, groupId, socket]);
+  }, [currentUser.email, groupId, handleContactsLoaded, handleGroupChatDeleted, handleSenderMessageGroup, socket, toRecieversGroup]);
 
   useEffect(() => {
-    
     post("/getAllGroupChats", { group_id: groupId }).then((data) => {
       setContacts(data);
-      console.log('on click load group chats')
-      console.log(data)
-      console.log('on click load group chats')
-
     });
-  }, [groupId]);
+  }, [groupId,contacts]);
   useEffect(()=>{
     singleChatDivRef.current?.scrollIntoView({ behavior: 'smooth' });
   },[contacts])
@@ -124,10 +153,25 @@ function Group({ lastInsertedGroupId, groupId }: any) {
     post('/getGroupMembers',{groupId}).then((data)=>{
       setSelectedOptions(data);
     })
-
-    
-
   },[groupId])
+  // delete chat 
+  interface DeleteIcons {
+    [key: number]: boolean;
+  }
+  const [deleteIcons, setDeleteIcons] = useState<DeleteIcons>({});
+
+  const handleMouseEnter = (index: any) => {
+    setDeleteIcons({ ...deleteIcons, [index]: true });
+  };
+  const handleMouseLeave = (index: any) => {
+    setDeleteIcons({ ...deleteIcons, [index]: false });
+  };
+  const handleDeleteMessage = (id: any) => {
+    alert(id)
+    socket?.emit("deleteGroupChat", { groupChatId:id,groupId });
+  };
+  
+
   
   return (
     <div className="chat1">
@@ -153,7 +197,7 @@ function Group({ lastInsertedGroupId, groupId }: any) {
            <div className="group_user_parent">
            {groupUsers.map((groupUser) => {
              return (
-               <div className="chat_user_card">
+               <div className="chat_user_card" key={groupUser.label}>
                  <img src={avatar} alt="User Image" />
                  <div className="card-content">
                    <p>{groupUser.label}</p>
@@ -171,7 +215,7 @@ function Group({ lastInsertedGroupId, groupId }: any) {
           {contacts.map((contact) => {
             if (currentUser.email !== contact.email) {
               return (
-                <div className="div24">
+                <div className="div24" key={contact.id}>
                   <div className="message">
                     <div className="avatar1">
                       <img className="avatar-icon1" alt="" src={avatar} />
@@ -181,6 +225,9 @@ function Group({ lastInsertedGroupId, groupId }: any) {
                     </div>
                     <div className="message1">
                       <div className="hihow-are-things-with-our-ill-wrapper">
+
+                      
+
                         <div className="hihow-are-things">
                           <div>{contact.email}</div>
                           {contact.message}
@@ -195,9 +242,25 @@ function Group({ lastInsertedGroupId, groupId }: any) {
               );
             } else {
               return (
-                <div className="message7">
+                <div className="message7" key={contact.id}>
                   <div className="message8">
-                    <div className="hi-im-working-on-the-final-sc-wrapper">
+                    <div className="hi-im-working-on-the-final-sc-wrapper for_delete"
+                      onMouseEnter={() => handleMouseEnter(contact.id)}
+                      onMouseLeave={() => handleMouseLeave(contact.id)}
+
+                    >
+                    { deleteIcons[contact.id] && (
+                                  <div className="delete_button_group">
+                                    <RiDeleteBin6Line
+                                      className="delete-icon"
+                                      onClick={() =>
+                                        handleDeleteMessage(contact.id)
+                                      }
+                                    />
+                                  </div>
+                                )}
+
+
                       <div className="hihow-are-things">
                         <div>{contact.email}</div>
                         {contact.message}
