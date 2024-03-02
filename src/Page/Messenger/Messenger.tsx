@@ -402,7 +402,7 @@ const Messenger = () => {
                 return (
                   <div
                     className="contact1"
-                    style={{ margin: "auto",
+                    style={{ margin:"auto",
                     
                       backgroundColor:
                       checkSelectedGroup !== null ? "" :  selectedGroup === group ? "#6366F1" : "white",
@@ -415,7 +415,7 @@ const Messenger = () => {
 
                     
                   >
-                    <div className="avatar-parent">
+                    <div className="avatar-parent all_group_avatar_parent">
                       <IconContext.Provider
                         value={{
                           color: "black",

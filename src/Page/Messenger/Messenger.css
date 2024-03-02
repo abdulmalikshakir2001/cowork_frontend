@@ -1154,4 +1154,12 @@
   }
   
 
- 
+  .all_group_avatar_parent{
+    align-items: center;
+  }
+  .contact.custom_scoll{
+    padding: 0 var(--padding-5xl);
+  }
+  .avatar-parent.all_group_avatar_parent{
+    margin-left: 10px;
+  }
