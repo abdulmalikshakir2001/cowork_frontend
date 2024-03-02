@@ -12,42 +12,35 @@ import { post } from "../../api/base-api";
 import { selectAuthUser } from "../../lib/features/authUser/authUserSlice";
 import { useAppSelector } from "../../lib/hooks";
 import { useSocket } from "../../providers/Socket";
-import "./Group.css";
-import { group } from "console";
 
-function Group({ lastInsertedGroupId, groupId }: any) {
-  
-  const singleChatDivRef = useRef<HTMLDivElement>(null);
-  
+function GroupChats({ lastInsertedGroupId, groupId }: any) {
   const socketContext = useSocket();
   const socket = socketContext ? socketContext.socket : null;
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const currentUser = useAppSelector(selectAuthUser); // this object contain email,role,name -->focus
   const [input, setInput] = useState<string>(""); // current user message -->focus
-  const [initialDefaultOptions, setInitialDefaultOptions] = useState<any[]>([]); // current user message -->focus
   const [selectedOptions, setSelectedOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
   const [groupUsers, setGroupUsers] = useState<any[]>([]);
-  const [showUserGroup, setShowUserGroup] = useState(true);
+
   const handleChange = (selectedOptions: any) => {
-    setSelectedOptions(selectedOptions);
     // lastInsertedGroupId
-    setGroupUsers(selectedOptions);
+    console.log(selectedOptions);
     const lastSelectedUser = selectedOptions[selectedOptions.length - 1];
-    console.log(lastSelectedUser)
-    
+    // console.log(lastSelectedUser)
     post("/saveGroupMember", {
-      group_id: lastInsertedGroupId ? lastInsertedGroupId : groupId,
+      group_id: lastInsertedGroupId,
       email: lastSelectedUser.value,
     }).then((data) => {
       if (data.statusCode === 201) {
-        alert('user added in the group')
+        alert("user added to group");
       }
     });
   };
   const [apiOptions, setApiOptions] = useState<any>();
   const [contacts, setContacts] = useState<any[]>([]);
+
   const loadOption = (inputValue: string, callBack: any) => {
     // getAllUsersBySearch
     post("/getAllUsersBySearch", {
@@ -60,6 +53,7 @@ function Group({ lastInsertedGroupId, groupId }: any) {
       callBack(filtered_data);
     });
   };
+
   const handleSenderMessageGroup = (data: any) => {
     setContacts((prev) => [...prev, data]);
   };
@@ -74,9 +68,6 @@ function Group({ lastInsertedGroupId, groupId }: any) {
     if (input.trim() !== "") {
       setInput("");
     }
-    
-    
-    setShowUserGroup(false)
     post("/saveGroupChats", {
       email: currentUser.email,
       message: input,
@@ -102,72 +93,25 @@ function Group({ lastInsertedGroupId, groupId }: any) {
   }, [currentUser.email, groupId, socket]);
 
   useEffect(() => {
-    
     post("/getAllGroupChats", { group_id: groupId }).then((data) => {
       setContacts(data);
-      console.log('on click load group chats')
-      console.log(data)
-      console.log('on click load group chats')
-
     });
   }, [groupId]);
-  useEffect(()=>{
-    singleChatDivRef.current?.scrollIntoView({ behavior: 'smooth' });
-  },[contacts])
-
-  // useEffect(()=>{
-  //   // alert('groupId to fecth group members to show ----- '  + groupId)
-
-  // },[groupId])
-
-  useEffect(()=>{
-    post('/getGroupMembers',{groupId}).then((data)=>{
-      setSelectedOptions(data);
-    })
-
-    
-
-  },[groupId])
-  
   return (
     <div className="chat1">
       <div className="user-header">
         <AsyncSelect
-         
           loadOptions={loadOption}
           onChange={handleChange}
-          defaultOptions={initialDefaultOptions}
-          value={selectedOptions} 
           isMulti
           placeholder="To"
-          
         />
       </div>
 
       <div className="chat2 custom_scroll" ref={chatContainerRef}>
         <div className="friday-january-26th-parent">
           <div className="friday-january-26th">Friday, January 26th</div>
-          search users to add in the Group
-          {
-            showUserGroup && 
-           <div className="group_user_parent">
-           {groupUsers.map((groupUser) => {
-             return (
-               <div className="chat_user_card">
-                 <img src={avatar} alt="User Image" />
-                 <div className="card-content">
-                   <p>{groupUser.label}</p>
-                 </div>
-               </div>
-             );
-           })}
-         </div>
-         
 
-
-  
- }
-          {/* showing chats on selection */}
           {contacts.map((contact) => {
             if (currentUser.email !== contact.email) {
               return (
@@ -212,10 +156,7 @@ function Group({ lastInsertedGroupId, groupId }: any) {
               );
             }
           })}
-          {/* showing chats on selection */}
-          <div ref={singleChatDivRef}></div>
-
-
+          
         </div>
       </div>
       <div className="avatar-parent7">
@@ -249,4 +190,4 @@ function Group({ lastInsertedGroupId, groupId }: any) {
   );
 }
 
-export default Group;
+export default GroupChats;

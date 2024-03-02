@@ -10,7 +10,7 @@
     border-radius: var(--br-mini) 0 0 var(--br-mini);
     background-color: white;
     border-right: 2px solid var(--brand-divider);
-    overflow: hidden;
+    overflow: auto;
     padding: var(--padding-13xl) 0;
     gap: var(--gap-5xl);
     height: 100%;
@@ -1105,4 +1105,37 @@
   
   /* group end */
   
-  
+   /* card */
+   .chat_user_card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+
+    background-color: #fff;
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+
+
+.chat_user_card .card-content {
+    padding-top: 10px;
+    text-align: center;
+}
+
+.chat_user_card .card-content h3 {
+    margin-top: 0;
+}
+
+.chat_user_card .card-content p {
+    margin-bottom: 0;
+    color: #666;
+}
+.group_user_parent{
+    display: flex;
+    gap: 10px;
+
+}

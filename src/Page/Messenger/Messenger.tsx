@@ -87,17 +87,23 @@ const Messenger = () => {
     setShowGroupName(true);
   };
   const handleSaveGroupName = () => {
+    
     post("/saveGroup", {
       name: changeGroupName,
       created_by: currentUser.email,
     }).then((data) => {
       setShowGroupSaveButton(false);
-
       console.log(data);
       if (data.statusCode === 201) {
         setLastInsertedGroupId(data.lastInsertedGroupId);
+        
+        setGroupId(data.lastInsertedGroupId)
+        
+
         setShowGroups(true);
         setShowChats(false);
+        handleSelectedGroup({ group_id: data.lastInsertedGroupId});
+        
       }
     });
   };
@@ -288,13 +294,12 @@ const Messenger = () => {
               setAllGroups(data);
             }
           );
-        handleSelectedGroup({ group_id: data.group_id });
+          
+        
       }
     });
   }, [currentUser.email, lastInsertedGroupId, socket]);
-  // const handleDeleteMessage = (index: any) => {
-  //   alert("chat mesage" + index + "deleted");
-  // };
+  
   interface DeleteIcons {
     [key: number]: boolean;
   }
@@ -324,6 +329,7 @@ const Messenger = () => {
     console.log(selectedGroup)
 
   },[selectedGroup])
+  
 
   return (
     <Layout>
@@ -602,11 +608,11 @@ const Messenger = () => {
             </div>
           )}
           {/* default  */}
-
           {showGroups && (
             <Group
               lastInsertedGroupId={lastInsertedGroupId}
               groupId={groupId && groupId}
+              
             />
           )}
           {selectedUser && showChats && (
