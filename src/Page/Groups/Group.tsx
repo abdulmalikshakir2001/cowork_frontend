@@ -44,7 +44,7 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
       email: lastSelectedUser.value,
     }).then((data) => {
       if (data.statusCode === 201) {
-        alert('user added in the group')
+        
         socket?.emit('userAddedToGroup',data)
         
       }
@@ -107,9 +107,6 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
   },[])
   const handleContactsLoaded = useCallback( (data:any)=>{
     // current
-    alert('groups loaded')
-    
-  
     
   },[])
   
@@ -168,7 +165,6 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
     setDeleteIcons({ ...deleteIcons, [index]: false });
   };
   const handleDeleteMessage = (id: any) => {
-    alert(id)
     socket?.emit("deleteGroupChat", { groupChatId:id,groupId });
   };
   
