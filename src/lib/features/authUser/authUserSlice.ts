@@ -1,16 +1,22 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { features } from 'process';
+import { extend } from 'jquery';
 
 
 // Define a type for the slice state
-export interface IUserState {
+
+interface IChats {
+  message?:string|null;
+  last_message_date?:string|null;
+}
+export interface IUserState extends IChats {
   
   id?:number|null
    name:string|null;
    email:string|null;
    role:string|null;
-   online_status:string|number|null
+   online_status:string|number|null;
    
    
    

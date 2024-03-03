@@ -62,6 +62,7 @@ const Messenger = () => {
   );
   const [distUserMessages, setDistUserMessages] = useState<string[] | []>([]);
   const [contacts, setContacts] = useState<IUserState[]>();
+  const [usersWithLastChat, setUsersWithLastChat] = useState<IUserState[]>();
   const [showChats, setShowChats] = useState(false);
 
   // group start
@@ -277,6 +278,11 @@ const Messenger = () => {
           setContacts(data);
         }
       );
+      post("/lastChatWithUser", { currentUserEmail: currentUser.email }).then(
+        (data) => {
+          setUsersWithLastChat(data);
+        }
+      );
   }, [currentUser, userOnline]);
 
   useEffect(() => {
@@ -465,8 +471,8 @@ const Messenger = () => {
             {/* group */}
 
             <div className="contact">
-              {contacts &&
-                contacts.map((contact) => {
+              {usersWithLastChat &&
+                usersWithLastChat.map((contact) => {
                   return (
                     <div
                       className="contact1"
@@ -506,12 +512,12 @@ const Messenger = () => {
                             {contact.name}
                           </div>
                           <div className="hi-how-are">
-                            Hi! this is {contact.name}
+                             {contact.message}
                           </div>
                         </div>
                       </div>
                       <div className="parent">
-                        <div className="div16">10:30 AM</div>
+                        <div className="div16">{moment(contact.last_message_date).format('h:mm a')}</div>
                         <div className="ellipse" />
                       </div>
                     </div>
