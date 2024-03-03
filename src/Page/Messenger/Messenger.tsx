@@ -28,12 +28,17 @@ import defaultChatImg from "../../Assets/Images/chat/default_chat_page.png";
 import { Dropdown } from "react-bootstrap";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { json } from "react-router-dom";
+import moment from 'moment';
+
+
 
 interface IChatMessage {
   id: number ;
   email: string;
   message: string;
+  created_at:string;
 }
+
 
 const Messenger = () => {
   const singleChatDivRef = useRef<HTMLDivElement>(null);
@@ -676,7 +681,7 @@ const Messenger = () => {
                                 </div>
                               </div>
                               <div className="wrapper3">
-                                <div className="div16">8:30 AM</div>
+                                <div className="div16">{moment(data.created_at).format('h:mm a')}</div>
                               </div>
                             </div>
                           </div>
@@ -709,7 +714,7 @@ const Messenger = () => {
                               </div>
                             </div>
                             <div className="wrapper6">
-                              <div className="div16">10:25 AM</div>
+                              <div className="div16">{moment(data.created_at).format('h:mm a')}</div>
                             </div>
                           </div>
                           <img className="avatar-icon1" alt="" src={avatar} />

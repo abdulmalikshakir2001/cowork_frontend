@@ -15,6 +15,7 @@ import { useSocket } from "../../providers/Socket";
 import "./Group.css";
 import { group } from "console";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import moment from 'moment';
 
 function Group({ lastInsertedGroupId, groupId  }: any) {
   
@@ -234,7 +235,7 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
                         </div>
                       </div>
                       <div className="wrapper3">
-                        <div className="div16">8:30 AM</div>
+                        <div className="div16">{moment(contact.created_at).format('h:mm a')}</div>
                       </div>
                     </div>
                   </div>
@@ -267,7 +268,7 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
                       </div>
                     </div>
                     <div className="wrapper6">
-                      <div className="div16">10:25 AM</div>
+                      <div className="div16">{moment(contact.created_at).format('h:mm a')}</div>
                     </div>
                   </div>
                   <img className="avatar-icon1" alt="" src={avatar} />
