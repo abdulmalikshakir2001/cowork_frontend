@@ -156,6 +156,7 @@
     line-height: 22px;
     font-weight: 500;
     color: var(--gray-400);
+    width:180px ;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1154,12 +1155,12 @@
   }
   
 
-  .all_group_avatar_parent{
-    align-items: center;
+ 
+.emoji_parent{
+    display: relative;
   }
-  .contact.custom_scoll{
-    padding: 0 var(--padding-5xl);
-  }
-  .avatar-parent.all_group_avatar_parent{
-    margin-left: 10px;
+  .picker_parent{
+    position: absolute;
+    bottom: 138px;
+    right: 30px;
   }

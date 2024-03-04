@@ -28,17 +28,16 @@ import defaultChatImg from "../../Assets/Images/chat/default_chat_page.png";
 import { Dropdown } from "react-bootstrap";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { json } from "react-router-dom";
-import moment from 'moment';
-
-
+import moment from "moment";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 
 interface IChatMessage {
-  id: number ;
+  id: number;
   email: string;
   message: string;
-  created_at:string;
+  created_at: string;
 }
-
 
 const Messenger = () => {
   const singleChatDivRef = useRef<HTMLDivElement>(null);
@@ -49,6 +48,7 @@ const Messenger = () => {
   const socket = socketContext ? socketContext.socket : null;
 
   const dispatch = useAppDispatch();
+  const [load, setLoad] = useState(false);
   const [selectedUserName, setSelectedUserName] = useState<string | null>();
   const [selectedUserRole, setSelectedUserRole] = useState<string | null>();
   const [messages, setMessages] = useState<string[]>([]);
@@ -74,7 +74,7 @@ const Messenger = () => {
   const [showGroups, setShowGroups] = useState(false);
   const [showDefaultChatPage, setShowDefaultChatPage] = useState(true);
   const [chatDeleted, setChatDeleted] = useState(false);
-  
+
   const [showDeleteIcon, setShowDeleteIcon] = useState(true);
   const [selectedUserOnlineStatus, setSelectedUserOnlineStatus] =
     useState(false);
@@ -84,10 +84,9 @@ const Messenger = () => {
   const [allGroups, setAllGroups] = useState<any>(null);
   const [groupId, setGroupId] = useState<any>(null);
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
-  const [checkSelectedGroup, setCheckSelectedGroup] = useState<null | boolean>(null);
-  
-
-
+  const [checkSelectedGroup, setCheckSelectedGroup] = useState<null | boolean>(
+    null
+  );
 
   const handleShowGroupNameChange = () => {
     setChangeGroupName("");
@@ -95,7 +94,6 @@ const Messenger = () => {
     setShowGroupName(true);
   };
   const handleSaveGroupName = () => {
-    
     post("/saveGroup", {
       name: changeGroupName,
       created_by: currentUser.email,
@@ -104,14 +102,12 @@ const Messenger = () => {
       console.log(data);
       if (data.statusCode === 201) {
         setLastInsertedGroupId(data.lastInsertedGroupId);
-        
-        setGroupId(data.lastInsertedGroupId)
-        
+
+        setGroupId(data.lastInsertedGroupId);
 
         setShowGroups(true);
         setShowChats(false);
-        handleSelectedGroup({ group_id: data.lastInsertedGroupId});
-        
+        handleSelectedGroup({ group_id: data.lastInsertedGroupId });
       }
     });
   };
@@ -128,21 +124,13 @@ const Messenger = () => {
   };
 
   const handleSelectUser = (selectedUser: IUserState) => {
-
-    
-    
-    
-    
     setShowGroups(false);
-    
+
     setShowDefaultChatPage(false);
     setSelectedUser(selectedUser);
     setSelectedUserName(selectedUser.name);
     setSelectedUserRole(selectedUser.role);
-    setCheckSelectedGroup(true)
-
-    
-
+    setCheckSelectedGroup(true);
 
     if (selectedUser.online_status === 0) {
       setSelectedUserOnlineStatus(false);
@@ -164,18 +152,13 @@ const Messenger = () => {
     // current
 
     setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
+    setLoad(true)
     // After content is loaded
-    
 
-    
-    
-
-
-    
-    
     // socket?.emit('recieverMessage',{email:selectedUser?.email,message:data.message})
   }, []);
   const handleToDist = useCallback((data: any) => {
+    setLoad(true)
     setDistUserEmail(data.email);
     setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
   }, []);
@@ -199,42 +182,32 @@ const Messenger = () => {
       setInput("");
     }
 
-    
     socket?.emit("senderMessage", {
       sender: currentUser.email,
       reciever: selectedUser?.email,
       message: input,
-      id:currentUser.id
+      id: currentUser.id,
     });
   };
 
   const handleSelectedGroup = (group: any) => {
-    setCheckSelectedGroup(null)
-    setSelectedGroup(group)
+    setCheckSelectedGroup(null);
+    setSelectedGroup(group);
     setGroupId(group.group_id);
-    
 
     setShowGroups(true);
     setShowDefaultChatPage(false);
     setShowChats(false);
   };
 
-
-
-   const  handleChatDeleted = (data:any)=>{
+  const handleChatDeleted = (data: any) => {
     post("/getAllChats", {
-      sender: data.currentUserEmail ,
+      sender: data.currentUserEmail,
       reciever: data.email,
     }).then((data) => {
       setBothChatMessages(data);
     });
-    
-    
-    
-
-    
-  }
-
+  };
 
   useEffect(() => {
     socket?.emit("userLogin", currentUser);
@@ -254,8 +227,7 @@ const Messenger = () => {
       socket?.off("online", handleOnline);
       socket?.off("userOnline", handleUserOnline);
       socket?.off("userOffline", handleUserOffline);
-    socket?.off("chatDeleted", handleChatDeleted);
-
+      socket?.off("chatDeleted", handleChatDeleted);
     };
   }, [
     handleOnline,
@@ -278,12 +250,12 @@ const Messenger = () => {
           setContacts(data);
         }
       );
-      post("/lastChatWithUser", { currentUserEmail: currentUser.email }).then(
-        (data) => {
-          setUsersWithLastChat(data);
-        }
-      );
-  }, [currentUser, userOnline]);
+    post("/lastChatWithUser", { currentUserEmail: currentUser.email }).then(
+      (data) => {
+        setUsersWithLastChat(data);
+      }
+    );
+  }, [currentUser, userOnline,load]);
 
   useEffect(() => {
     currentUser.email &&
@@ -307,21 +279,16 @@ const Messenger = () => {
               setAllGroups(data);
             }
           );
-          
-        
       }
     });
   }, [currentUser.email, lastInsertedGroupId, socket]);
-  
+
   interface DeleteIcons {
     [key: number]: boolean;
   }
   const [deleteIcons, setDeleteIcons] = useState<DeleteIcons>({});
 
   const handleMouseEnter = (index: any) => {
-    
-    
-    
     setDeleteIcons({ ...deleteIcons, [index]: true });
   };
 
@@ -329,21 +296,32 @@ const Messenger = () => {
     setDeleteIcons({ ...deleteIcons, [index]: false });
   };
   const handleDeleteMessage = (id: any) => {
-
-    socket?.emit("deleteSingleChat", { id ,email:selectedUser?.email,currentUserEmail:currentUser.email});
+    socket?.emit("deleteSingleChat", {
+      id,
+      email: selectedUser?.email,
+      currentUserEmail: currentUser.email,
+    });
   };
 
+  useEffect(() => {
+    singleChatDivRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [bothChatMessages]);
+
+  useEffect(() => {
+    console.log(selectedGroup);
+  }, [selectedGroup]);
+  // emoji picker
+  const [showPicker, setShowPicker] = useState(false);
+
+  const handleEmojiSelect = (emoji: any) => {
+    console.log(emoji);
+    setInput(input + emoji.native);
+  };
 
   useEffect(()=>{
-    singleChatDivRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setLoad(false)
 
-  },[bothChatMessages])
-
-  useEffect(()=>{
-    console.log(selectedGroup)
-
-  },[selectedGroup])
-  
+  },[usersWithLastChat])
 
   return (
     <Layout>
@@ -416,18 +394,18 @@ const Messenger = () => {
                 return (
                   <div
                     className="contact1"
-                    style={{ margin:"auto",
-                    
+                    style={{
+                      margin: "auto",
+
                       backgroundColor:
-                      checkSelectedGroup !== null ? "" :  selectedGroup === group ? "#6366F1" : "white",
-                      
-                    
-                   }}
+                        checkSelectedGroup !== null
+                          ? ""
+                          : selectedGroup === group
+                          ? "#6366F1"
+                          : "white",
+                    }}
                     onClick={() => handleSelectedGroup(group)}
                     key={group.id}
-                    
-
-                    
                   >
                     <div className="avatar-parent all_group_avatar_parent">
                       <IconContext.Provider
@@ -444,14 +422,12 @@ const Messenger = () => {
 
                       <div className="text">
                         <div
-                        className={
-                          selectedGroup === group
-                            ? ""
-                            : "bogdan-krivenchenko"
-                        }
-                        style={
-                          selectedGroup === group ? { color: "white" } : {}
-                        }
+                          className={
+                            selectedGroup === group ? "" : "bogdan-krivenchenko"
+                          }
+                          style={
+                            selectedGroup === group ? { color: "white" } : {}
+                          }
                         >
                           {group.group_name}
                         </div>
@@ -480,7 +456,11 @@ const Messenger = () => {
                       key={contact.id}
                       style={{
                         backgroundColor:
-                        checkSelectedGroup === null ? "" : selectedUser === contact ? "#6366F1" : "white",
+                          checkSelectedGroup === null
+                            ? ""
+                            : selectedUser === contact
+                            ? "#6366F1"
+                            : "white",
                       }}
                     >
                       <div className="avatar-parent">
@@ -511,13 +491,15 @@ const Messenger = () => {
                           >
                             {contact.name}
                           </div>
-                          <div className="hi-how-are">
-                             {contact.message}
+                          <div className="hi-how-are" id="hi-how-are">
+                            {contact.message}
                           </div>
                         </div>
                       </div>
                       <div className="parent">
-                        <div className="div16">{moment(contact.last_message_date).format('h:mm a')}</div>
+                        <div className="div16">
+                          {moment(contact.last_message_date).format("h:mm a")}
+                        </div>
                         <div className="ellipse" />
                       </div>
                     </div>
@@ -606,7 +588,20 @@ const Messenger = () => {
                         onClick={messageStart}
                         icon={faPaperPlane}
                       />
-                      <img className="info-circle-icon" alt="" src={emoji} />
+                      <span>
+                        {showPicker && (
+                          <Picker
+                            data={data}
+                            onEmojiSelect={handleEmojiSelect}
+                          />
+                        )}
+                        <img
+                        className="info-circle-icon"
+                        alt=""
+                        src={emoji}
+                        onClick={() => setShowPicker(!showPicker)}
+                      />
+                      </span>
                       <img
                         className="info-circle-icon"
                         alt=""
@@ -626,8 +621,6 @@ const Messenger = () => {
             <Group
               lastInsertedGroupId={lastInsertedGroupId}
               groupId={groupId && groupId}
-              
-              
             />
           )}
           {selectedUser && showChats && (
@@ -676,18 +669,16 @@ const Messenger = () => {
                                 <img alt="" src={onlineShow} />
                               </div>
                             </div>
-                            <div
-                              className="message1"
-                              
-                            >
+                            <div className="message1">
                               <div className="hihow-are-things-with-our-ill-wrapper ">
-                              
                                 <div className="hihow-are-things">
                                   {data.message}
                                 </div>
                               </div>
                               <div className="wrapper3">
-                                <div className="div16">{moment(data.created_at).format('h:mm a')}</div>
+                                <div className="div16">
+                                  {moment(data.created_at).format("h:mm a")}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -696,31 +687,29 @@ const Messenger = () => {
                     } else {
                       return (
                         <div className="message7">
-                          <div className="message8"
-                          
-                          >
-                            <div className="hi-im-working-on-the-final-sc-wrapper for_delete"
-                            onMouseEnter={() => handleMouseEnter(data.id)}
-                            onMouseLeave={() => handleMouseLeave(data.id)}
+                          <div className="message8">
+                            <div
+                              className="hi-im-working-on-the-final-sc-wrapper for_delete"
+                              onMouseEnter={() => handleMouseEnter(data.id)}
+                              onMouseLeave={() => handleMouseLeave(data.id)}
                             >
-                            { deleteIcons[data.id] && (
-                                  <div className="delete_button">
-                                    <RiDeleteBin6Line
-                                      className="delete-icon"
-                                      onClick={() =>
-                                        handleDeleteMessage(data.id)
-                                      }
-                                    />
-                                  </div>
-                                )}
-
+                              {deleteIcons[data.id] && (
+                                <div className="delete_button">
+                                  <RiDeleteBin6Line
+                                    className="delete-icon"
+                                    onClick={() => handleDeleteMessage(data.id)}
+                                  />
+                                </div>
+                              )}
 
                               <div className="hihow-are-things">
                                 {data.message}
                               </div>
                             </div>
                             <div className="wrapper6">
-                              <div className="div16">{moment(data.created_at).format('h:mm a')}</div>
+                              <div className="div16">
+                                {moment(data.created_at).format("h:mm a")}
+                              </div>
                             </div>
                           </div>
                           <img className="avatar-icon1" alt="" src={avatar} />
@@ -756,7 +745,23 @@ const Messenger = () => {
                         onClick={messageStart}
                         icon={faPaperPlane}
                       />
-                      <img className="info-circle-icon" alt="" src={emoji} />
+                      <span className="emoji_parent">
+                        {showPicker && (
+                          <span className="picker_parent">
+                          <Picker
+                            data={data}
+                            onEmojiSelect={handleEmojiSelect}
+                          />
+                          </span>
+                        )}
+                        <img
+                        className="info-circle-icon"
+                        alt=""
+                        src={emoji}
+                        onClick={() => setShowPicker(!showPicker)}
+                      />
+                      </span>
+                      
                       <img
                         className="info-circle-icon"
                         alt=""
