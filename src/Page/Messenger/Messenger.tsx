@@ -27,20 +27,24 @@ import Group from "../Groups/Group";
 import defaultChatImg from "../../Assets/Images/chat/default_chat_page.png";
 import { Dropdown } from "react-bootstrap";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { json } from "react-router-dom";
+import { json, useFetcher } from "react-router-dom";
 import moment from "moment";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { MdCancel } from "react-icons/md";
+import {DOCOTEAM_API} from  "../../config";
 
 interface IChatMessage {
   id: number;
   email: string;
   message: string;
+  is_image:string|number|boolean;
   created_at: string;
 }
 
 const Messenger = () => {
   const singleChatDivRef = useRef<HTMLDivElement>(null);
+  const afterPreviewImgRef = useRef<HTMLDivElement>(null);
   const currentUser = useAppSelector(selectAuthUser); // this object contain email,role,name -->focus
   const [selectedUser, setSelectedUser] = useState<IUserState>(); // this object contain email,role,name -->focus
   const [distUserEmail, setDistUserEmail] = useState<string | null>(null);
@@ -87,6 +91,7 @@ const Messenger = () => {
   const [checkSelectedGroup, setCheckSelectedGroup] = useState<null | boolean>(
     null
   );
+  const [previewImage, setPreviewImage] = useState<any>(undefined);
 
   const handleShowGroupNameChange = () => {
     setChangeGroupName("");
@@ -99,7 +104,7 @@ const Messenger = () => {
       created_by: currentUser.email,
     }).then((data) => {
       setShowGroupSaveButton(false);
-      console.log(data);
+      // console.log(data);
       if (data.statusCode === 201) {
         setLastInsertedGroupId(data.lastInsertedGroupId);
 
@@ -150,15 +155,17 @@ const Messenger = () => {
   };
   const handleToSender = useCallback((data: any) => {
     // current
+    cancelPreview();
 
     setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
-    setLoad(true)
+    setLoad(true);
     // After content is loaded
 
     // socket?.emit('recieverMessage',{email:selectedUser?.email,message:data.message})
   }, []);
   const handleToDist = useCallback((data: any) => {
-    setLoad(true)
+    cancelPreview();
+    setLoad(true);
     setDistUserEmail(data.email);
     setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
   }, []);
@@ -186,6 +193,8 @@ const Messenger = () => {
       sender: currentUser.email,
       reciever: selectedUser?.email,
       message: input,
+      file: previewImage,
+
       id: currentUser.id,
     });
   };
@@ -255,7 +264,7 @@ const Messenger = () => {
         setUsersWithLastChat(data);
       }
     );
-  }, [currentUser, userOnline,load]);
+  }, [currentUser, userOnline, load]);
 
   useEffect(() => {
     currentUser.email &&
@@ -318,10 +327,44 @@ const Messenger = () => {
     setInput(input + emoji.native);
   };
 
-  useEffect(()=>{
-    setLoad(false)
+  useEffect(() => {
+    setLoad(false);
+  }, [usersWithLastChat]);
+  // file upload=============================================================
+  
+  const previewImgFormRef = useRef<any>();
 
-  },[usersWithLastChat])
+  // Function to handle file input change
+  const handleFileInputChange = (event: any) => {
+    const file = event.target.files && event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          setPreviewImage(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const cancelPreview = () => {
+    setPreviewImage(undefined);
+    const fileInput = document.getElementById(
+      "fileInput"
+    ) as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+  useEffect(() => {
+    afterPreviewImgRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [previewImage]);
+
+  useEffect(()=>{
+    console.log(bothChatMessages)
+
+  },[bothChatMessages])
 
   return (
     <Layout>
@@ -395,8 +438,8 @@ const Messenger = () => {
                   <div
                     className="contact1"
                     style={{
-                      margin: "auto",
-
+                      marginLeft: "auto",
+                      marginRight: "auto",
                       backgroundColor:
                         checkSelectedGroup !== null
                           ? ""
@@ -596,11 +639,11 @@ const Messenger = () => {
                           />
                         )}
                         <img
-                        className="info-circle-icon"
-                        alt=""
-                        src={emoji}
-                        onClick={() => setShowPicker(!showPicker)}
-                      />
+                          className="info-circle-icon"
+                          alt=""
+                          src={emoji}
+                          onClick={() => setShowPicker(!showPicker)}
+                        />
                       </span>
                       <img
                         className="info-circle-icon"
@@ -650,7 +693,7 @@ const Messenger = () => {
 
               <div className="chat2 custom_scroll">
                 <div className="friday-january-26th-parent">
-                  <div className="friday-january-26th">
+                  <div className="friday-january-26th" style={{background:"white"}}>
                     Friday, January 26th
                   </div>
 
@@ -670,10 +713,18 @@ const Messenger = () => {
                               </div>
                             </div>
                             <div className="message1">
-                              <div className="hihow-are-things-with-our-ill-wrapper ">
-                                <div className="hihow-are-things">
-                                  {data.message}
-                                </div>
+                              <div className="hihow-are-things-with-our-ill-wrapper" style={{background:"transparent"}}>
+                              {
+                                data.is_image === 0 ?<div className="hihow-are-things"> {data.message}</div>:<div className="hihow-are-things" style={{background:"white"}} ><div className="preview_img_parent">
+                            <img
+                              src={`${DOCOTEAM_API}/chat_images/${data.message}`}
+                              alt="Preview"
+                              id="preview_img"
+                            />
+                          </div>
+                          </div>
+                                }
+                              
                               </div>
                               <div className="wrapper3">
                                 <div className="div16">
@@ -692,6 +743,7 @@ const Messenger = () => {
                               className="hi-im-working-on-the-final-sc-wrapper for_delete"
                               onMouseEnter={() => handleMouseEnter(data.id)}
                               onMouseLeave={() => handleMouseLeave(data.id)}
+                              
                             >
                               {deleteIcons[data.id] && (
                                 <div className="delete_button">
@@ -701,10 +753,24 @@ const Messenger = () => {
                                   />
                                 </div>
                               )}
+                              
 
-                              <div className="hihow-are-things">
-                                {data.message}
-                              </div>
+                                {
+                                data.is_image === 0 ?<div className="hihow-are-things"> {data.message}</div>:<div className="hihow-are-things" style={{background:"white"}} ><div className="preview_img_parent">
+                            <img
+                              src={`${DOCOTEAM_API}/chat_images/${data.message}`}
+                              alt="Preview"
+                              id="preview_img"
+                            />
+                          </div>
+                          </div>
+                                }
+                              
+                                
+                                
+
+
+                              
                             </div>
                             <div className="wrapper6">
                               <div className="div16">
@@ -713,14 +779,32 @@ const Messenger = () => {
                             </div>
                           </div>
                           <img className="avatar-icon1" alt="" src={avatar} />
+                          
                         </div>
                       );
                     }
                   })}
-                </div>
+                  <div ref={singleChatDivRef}></div>
 
-                <div ref={singleChatDivRef}></div>
+                  {previewImage  && (
+                    <>
+                      <div className="preview_img_parent">
+                        <span onClick={cancelPreview} className="cancel-btn">
+                          <MdCancel />
+                        </span>
+
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          id="preview_img"
+                        />
+                      </div>
+                      <div ref={afterPreviewImgRef}></div>
+                    </>
+                  )}
+                </div>
               </div>
+
               <div className="avatar-parent7">
                 <img className="avatar-icon" alt="" src={avatar} />
                 <div className="input-field">
@@ -748,25 +832,48 @@ const Messenger = () => {
                       <span className="emoji_parent">
                         {showPicker && (
                           <span className="picker_parent">
-                          <Picker
-                            data={data}
-                            onEmojiSelect={handleEmojiSelect}
-                          />
+                            <Picker
+                              data={data}
+                              onEmojiSelect={handleEmojiSelect}
+                            />
                           </span>
                         )}
                         <img
-                        className="info-circle-icon"
-                        alt=""
-                        src={emoji}
-                        onClick={() => setShowPicker(!showPicker)}
-                      />
+                          className="info-circle-icon"
+                          alt=""
+                          src={emoji}
+                          onClick={() => setShowPicker(!showPicker)}
+                        />
                       </span>
-                      
-                      <img
-                        className="info-circle-icon"
-                        alt=""
-                        src={fileShare}
-                      />
+
+                      {/* =========== */}
+                      <span>
+                        <form
+                          ref={previewImgFormRef}
+                          encType="multipart/form-data"
+                        >
+                          <div className="file_upload_parent">
+                            <label
+                              htmlFor="fileInput"
+                              className="file_upload_label"
+                            >
+                              <img
+                                className="file_upload_icon"
+                                alt=""
+                                src={fileShare}
+                                id="file_upload_button"
+                              />
+                            </label>
+                            <input
+                              type="file"
+                              id="fileInput"
+                              className="file_upload_input"
+                              onChange={handleFileInputChange}
+                            />
+                          </div>
+                        </form>
+                      </span>
+                      {/* ============================ */}
                     </div>
                   </div>
                   <div className="hint-text">

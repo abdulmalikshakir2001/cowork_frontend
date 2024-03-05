@@ -845,7 +845,8 @@
 .hi-im-working-on-the-final-sc-wrapper {
     width: 430px;
     border-radius: var(--br-xs);
-    background-color: var(--brand-brand-primary);
+    /* background-color: var(--brand-brand-primary); */
+    background-color: white;
     display: flex;
     flex-direction: row;
     align-items: center;

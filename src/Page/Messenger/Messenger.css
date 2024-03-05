@@ -740,6 +740,9 @@
     position: relative;
     line-height: 22px;
     font-weight: 500;
+    background-color: var(--brand-brand-primary);
+    padding: 15px;
+    border-radius: 15px;
 }
 
 .friday-january-26th {
@@ -753,7 +756,8 @@
 .hihow-are-things-with-our-ill-wrapper {
     align-self: stretch;
     border-radius: var(--br-xs);
-    background: rgba(240, 244, 246, 1);
+    /* background: rgba(240, 244, 246, 1); */
+    /* background-color: var(--brand-brand-primary); */
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -867,7 +871,8 @@
 .hi-im-working-on-the-final-sc-wrapper {
     width: 430px;
     border-radius: var(--br-xs);
-    background-color: var(--brand-brand-primary);
+    /* background-color: var(--brand-brand-primary); */
+    background-color: white;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -1144,18 +1149,15 @@
   }
   .for_delete{
     position: relative;
-    
   }
   .delete_button{
     color: black;
     position: absolute;
     left: 10px;
-    bottom: 37px;
+    top: -20px;
     cursor: pointer;
   }
-  
 
- 
 .emoji_parent{
     display: relative;
   }
@@ -1164,3 +1166,55 @@
     bottom: 138px;
     right: 30px;
   }
+  /* preview image */
+.preview_img_parent{
+    position: relative;
+    align-self: flex-end;
+    margin-top: 10px;
+}
+  #preview_img{
+    max-width: 100%; /* Set maximum width */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 20px;
+  }
+
+  /* Separate CSS */
+.file_upload_parent {
+    position: relative;
+    display: inline-block;
+}
+
+.file_upload_icon {
+    cursor: pointer;
+}
+
+.file_upload_input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
+.cancel-btn {
+    position: absolute;
+    top: -40px;
+
+    right: 5px;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 20px;
+
+    color: black;
+
+  }
+  .file_upload_label {
+}
+.single_dist_chat .hihow-are-things{
+    background-color: #F0F4F6;
+}
