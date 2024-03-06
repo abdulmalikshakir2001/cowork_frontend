@@ -33,6 +33,7 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { MdCancel } from "react-icons/md";
 import {DOCOTEAM_API} from  "../../config";
+import AgoTime from "../../Component/AgoTime";
 
 interface IChatMessage {
   id: number;
@@ -42,11 +43,16 @@ interface IChatMessage {
   created_at: string;
 }
 
+
+
+
+
+
 const Messenger = () => {
   const singleChatDivRef = useRef<HTMLDivElement>(null);
   const afterPreviewImgRef = useRef<HTMLDivElement>(null);
   const currentUser = useAppSelector(selectAuthUser); // this object contain email,role,name -->focus
-  const [selectedUser, setSelectedUser] = useState<IUserState>(); // this object contain email,role,name -->focus
+  const [selectedUser, setSelectedUser] = useState<any>(null); // this object contain email,role,name -->focus
   const [distUserEmail, setDistUserEmail] = useState<string | null>(null);
   const socketContext = useSocket();
   const socket = socketContext ? socketContext.socket : null;
@@ -57,7 +63,7 @@ const Messenger = () => {
   const [selectedUserRole, setSelectedUserRole] = useState<string | null>();
   const [messages, setMessages] = useState<string[]>([]);
   const [chatMessage, setChatMessage] = useState<string[]>([]);
-  const [bothChatMessages, setBothChatMessages] = useState<IChatMessage[]>([]);
+  const [bothChatMessages, setBothChatMessages] = useState<any>({});
   const [userOnline, setUserOnline] = useState<string | null>(null);
   const [input, setInput] = useState<string>(""); // current user message -->focus
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -104,7 +110,6 @@ const Messenger = () => {
       created_by: currentUser.email,
     }).then((data) => {
       setShowGroupSaveButton(false);
-      // console.log(data);
       if (data.statusCode === 201) {
         setLastInsertedGroupId(data.lastInsertedGroupId);
 
@@ -154,21 +159,27 @@ const Messenger = () => {
     });
   };
   const handleToSender = useCallback((data: any) => {
-    // current
     cancelPreview();
-
-    setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
     setLoad(true);
-    // After content is loaded
-
-    // socket?.emit('recieverMessage',{email:selectedUser?.email,message:data.message})
-  }, []);
+    post("/getAllChats", {
+      sender: currentUser.email,
+      reciever: selectedUser && selectedUser.email,
+    }).then((data) => {
+      setBothChatMessages(data);
+    });
+  }, [currentUser.email, selectedUser]);
   const handleToDist = useCallback((data: any) => {
     cancelPreview();
     setLoad(true);
     setDistUserEmail(data.email);
-    setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
-  }, []);
+    post("/getAllChats", {
+      sender: currentUser.email,
+      reciever: selectedUser && selectedUser.email,
+    }).then((data) => {
+      setBothChatMessages(data);
+    });
+    // setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
+  }, [currentUser.email, selectedUser]);
   const handleOnline = useCallback(
     (data: any) => {
       socket?.emit("changeOnlineStatus", { email: data.onelineUserEmail });
@@ -207,6 +218,7 @@ const Messenger = () => {
     setShowGroups(true);
     setShowDefaultChatPage(false);
     setShowChats(false);
+    setSelectedUser(null)
   };
 
   const handleChatDeleted = (data: any) => {
@@ -316,14 +328,10 @@ const Messenger = () => {
     singleChatDivRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [bothChatMessages]);
 
-  useEffect(() => {
-    console.log(selectedGroup);
-  }, [selectedGroup]);
+  
   // emoji picker
   const [showPicker, setShowPicker] = useState(false);
-
   const handleEmojiSelect = (emoji: any) => {
-    console.log(emoji);
     setInput(input + emoji.native);
   };
 
@@ -362,9 +370,10 @@ const Messenger = () => {
   }, [previewImage]);
 
   useEffect(()=>{
-    console.log(bothChatMessages)
+    console.log(`if chat messages load or selected`)
+    console.log(selectedUser)
 
-  },[bothChatMessages])
+  },[selectedUser,bothChatMessages])
 
   return (
     <Layout>
@@ -497,14 +506,16 @@ const Messenger = () => {
                       className="contact1"
                       onClick={() => handleSelectUser(contact)}
                       key={contact.id}
-                      style={{
+                      style={
+                        {
                         backgroundColor:
                           checkSelectedGroup === null
                             ? ""
-                            : selectedUser === contact
+                             :  selectedUser &&  selectedUser.email === contact.email
                             ? "#6366F1"
                             : "white",
-                      }}
+                      }
+                    }
                     >
                       <div className="avatar-parent">
                         <div className="avatar">
@@ -524,24 +535,31 @@ const Messenger = () => {
                         <div className="text">
                           <div
                             className={
-                              selectedUser === contact
+                               selectedUser === contact
                                 ? ""
                                 : "bogdan-krivenchenko"
                             }
                             style={
-                              selectedUser === contact ? { color: "white" } : {}
+                              selectedUser && selectedUser.email === contact.email ? { color: "white" } : {}
                             }
                           >
                             {contact.name}
                           </div>
-                          <div className="hi-how-are" id="hi-how-are">
+                          <div className="hi-how-are" id="hi-how-are" style={
+                              selectedUser && selectedUser.email === contact.email ? { color: "white" } : {}
+                            }>
                             {contact.message}
                           </div>
                         </div>
                       </div>
                       <div className="parent">
-                        <div className="div16">
-                          {moment(contact.last_message_date).format("h:mm a")}
+                        <div className="div16" style={
+                              selectedUser && selectedUser.email === contact.email ? { color: "white" } : {}
+                            }>
+                          
+                          {
+                          <AgoTime date={contact.last_message_date} />
+                          }
                         </div>
                         <div className="ellipse" />
                       </div>
@@ -693,11 +711,15 @@ const Messenger = () => {
 
               <div className="chat2 custom_scroll">
                 <div className="friday-january-26th-parent">
+            {/* ------------------------------------ */}
+                  {
+                    Object.keys(bothChatMessages).map((date)=>{
+                      return (
+                      <>
                   <div className="friday-january-26th" style={{background:"white"}}>
-                    Friday, January 26th
+                    { moment(date).format('MMM dddd DD') }
                   </div>
-
-                  {bothChatMessages.map((data) => {
+                  {bothChatMessages[date].map((data:any) => {
                     if (data.email === selectedUser.email) {
                       return (
                         <div className="div24 single_dist_chat" key={data.id}>
@@ -784,6 +806,14 @@ const Messenger = () => {
                       );
                     }
                   })}
+                  </>
+                      )
+                })
+                }
+            {/* ------------------------------------ */}
+
+
+
                   <div ref={singleChatDivRef}></div>
 
                   {previewImage  && (
