@@ -440,7 +440,11 @@ const Messenger = () => {
                                       src={avatar}
                                     />
                                     <div className="avatar-online-indicator">
-                                      <img alt="" src="" />
+                                      <img alt="" src={
+                                        contact.online_status === 1
+                                        ? onlineShow
+                                        : "offline"
+                                      } />
                                     </div>
                                   </div>
 
@@ -671,7 +675,12 @@ const Messenger = () => {
                                       src={avatar}
                                     />
                                     <div className="avatar-online-indicator">
-                                      <img alt="" src="" />
+                                      <img alt="" src={
+                                        contact.online_status === 1
+                                        ? onlineShow
+                                        : "offline"
+
+                                      } />
                                     </div>
                                   </div>
 
