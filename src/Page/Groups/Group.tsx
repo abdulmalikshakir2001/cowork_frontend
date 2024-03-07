@@ -15,12 +15,20 @@ import { useSocket } from "../../providers/Socket";
 import "./Group.css";
 import { group } from "console";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import moment from 'moment';
+import moment from "moment";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+import { MdCancel } from "react-icons/md";
+import {DOCOTEAM_API} from  "../../config";
 
-function Group({ lastInsertedGroupId, groupId  }: any) {
-  
-  const singleChatDivRef = useRef<HTMLDivElement>(null);
-  
+function Group({
+  lastInsertedGroupId,
+  groupId,
+  groupChatLoad,
+  setGroupChatLoad,
+}: any) {
+  const groupChatDivRef = useRef<HTMLDivElement>(null);
+
   const socketContext = useSocket();
   const socket = socketContext ? socketContext.socket : null;
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -32,21 +40,20 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
   >([]);
   const [groupUsers, setGroupUsers] = useState<any[]>([]);
   const [showUserGroup, setShowUserGroup] = useState(true);
+  const [previewImage, setPreviewImage] = useState<any>(undefined);
   const handleChange = (selectedOptions: any) => {
     setSelectedOptions(selectedOptions);
     // lastInsertedGroupId
     setGroupUsers(selectedOptions);
     const lastSelectedUser = selectedOptions[selectedOptions.length - 1];
-    console.log(lastSelectedUser)
-    
+    console.log(lastSelectedUser);
+
     post("/saveGroupMember", {
       group_id: lastInsertedGroupId ? lastInsertedGroupId : groupId,
       email: lastSelectedUser.value,
     }).then((data) => {
       if (data.statusCode === 201) {
-        
-        socket?.emit('userAddedToGroup',data)
-        
+        socket?.emit("userAddedToGroup", data);
       }
     });
   };
@@ -65,13 +72,26 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
     });
   };
 
-
-  const handleSenderMessageGroup = useCallback( (data: any) => {
-    setContacts((prev) => [...prev, data]);
-  },[]);
-  const toRecieversGroup = useCallback( (data: any) => {
-    setContacts((prev) => [...prev, data]);
-  },[]);
+  const handleSenderMessageGroup = useCallback(
+    (data: any) => {
+      post("/getAllGroupChats", { group_id: data.groupId }).then((data) => {
+        setContacts(data);
+        setGroupChatLoad(true);
+        cancelPreview()
+      });
+    },
+    [setGroupChatLoad]
+    
+  );
+  const toRecieversGroup = useCallback(
+    (data: any) => {
+      post("/getAllGroupChats", { group_id: data.groupId }).then((data) => {
+        setContacts(data);
+        setGroupChatLoad(true);
+      });
+    },
+    [setGroupChatLoad]
+  );
 
   useEffect(() => {
     console.log(selectedOptions);
@@ -80,9 +100,8 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
     if (input.trim() !== "") {
       setInput("");
     }
-    
-    
-    setShowUserGroup(false)
+
+    setShowUserGroup(false);
     // post("/saveGroupChats", {
     //   email: currentUser.email,
     //   message: input,
@@ -92,67 +111,48 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
     socket?.emit("senderMessageSend", {
       email: currentUser.email,
       message: input,
+      file: previewImage,
       groupId,
     });
   };
-  const  handleGroupChatDeleted = useCallback( (data:any)=>{
-    
+  const handleGroupChatDeleted = useCallback((data: any) => {
     post("/getAllGroupChats", { group_id: data.groupId }).then((data) => {
       setContacts(data);
     });
-    
-    
-
-    
-  },[])
-  const handleContactsLoaded = useCallback( (data:any)=>{
-    // current
-    
-  },[])
-  
-  
+  }, []);
 
   useEffect(() => {
     socket?.on("senderMessageGroup", handleSenderMessageGroup);
     socket?.on("toRecieversMessageGroup", toRecieversGroup);
     socket?.emit("joinRoom", { email: currentUser.email, groupId });
     socket?.on("groupChatDeleted", handleGroupChatDeleted);
-    socket?.on("relay", handleContactsLoaded);
-    
 
     return () => {
       socket?.off("senderMessageGroup", handleSenderMessageGroup);
       socket?.off("toRecieversMessageGroup", toRecieversGroup);
-    socket?.off("groupChatDeleted", handleGroupChatDeleted);
-    socket?.off("relay", handleContactsLoaded);
-    
-
-
-    
-
+      socket?.off("groupChatDeleted", handleGroupChatDeleted);
     };
-  }, [currentUser.email, groupId, handleContactsLoaded, handleGroupChatDeleted, handleSenderMessageGroup, socket, toRecieversGroup]);
+  }, [
+    currentUser.email,
+    groupId,
+    handleGroupChatDeleted,
+    handleSenderMessageGroup,
+    socket,
+    toRecieversGroup,
+  ]);
 
   useEffect(() => {
     post("/getAllGroupChats", { group_id: groupId }).then((data) => {
       setContacts(data);
     });
-  }, [groupId,contacts]);
-  useEffect(()=>{
-    singleChatDivRef.current?.scrollIntoView({ behavior: 'smooth' });
-  },[contacts])
+  }, [groupId, contacts]);
 
-  // useEffect(()=>{
-  //   // alert('groupId to fecth group members to show ----- '  + groupId)
-
-  // },[groupId])
-
-  useEffect(()=>{
-    post('/getGroupMembers',{groupId}).then((data)=>{
+  useEffect(() => {
+    post("/getGroupMembers", { groupId }).then((data) => {
       setSelectedOptions(data);
-    })
-  },[groupId])
-  // delete chat 
+    });
+  }, [groupId]);
+  // delete chat
   interface DeleteIcons {
     [key: number]: boolean;
   }
@@ -165,118 +165,188 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
     setDeleteIcons({ ...deleteIcons, [index]: false });
   };
   const handleDeleteMessage = (id: any) => {
-    socket?.emit("deleteGroupChat", { groupChatId:id,groupId });
+    socket?.emit("deleteGroupChat", { groupChatId: id, groupId });
   };
-  
 
-  
+  useEffect(() => {
+    socket?.emit("setGroupId", groupId);
+  }, [groupId, socket]);
+
+  // emoji picker
+  const [showPicker, setShowPicker] = useState(false);
+  const handleEmojiSelect = (emoji: any) => {
+    setInput(input + emoji.native);
+  };
+  // file upload=============================================================
+
+  const previewImgFormRef = useRef<any>();
+
+  // Function to handle file input change
+  const handleFileInputChange = (event: any) => {
+    const file = event.target.files && event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          setPreviewImage(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const cancelPreview = () => {
+    setPreviewImage(undefined);
+    const fileInput = document.getElementById(
+      "fileInput"
+    ) as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
   return (
     <div className="chat1">
       <div className="user-header">
         <AsyncSelect
-         
           loadOptions={loadOption}
           onChange={handleChange}
           defaultOptions={initialDefaultOptions}
-          value={selectedOptions} 
+          value={selectedOptions}
           isMulti
           placeholder="To"
-          
         />
       </div>
 
       <div className="chat2 custom_scroll" ref={chatContainerRef}>
+        {/* --------------------- */}
+
         <div className="friday-january-26th-parent">
-          <div className="friday-january-26th">Friday, January 26th</div>
-          search users to add in the Group
-          {
-            showUserGroup && 
-           <div className="group_user_parent">
-           {groupUsers.map((groupUser) => {
-             return (
-               <div className="chat_user_card" key={groupUser.label}>
-                 <img src={avatar} alt="User Image" />
-                 <div className="card-content">
-                   <p>{groupUser.label}</p>
-                 </div>
-               </div>
-             );
-           })}
-         </div>
-         
+        {showUserGroup && (
+                  <div className="group_user_parent">
+                    {groupUsers.map((groupUser) => {
+                      return (
+                        <div className="chat_user_card" key={groupUser.label}>
+                          <img src={avatar} alt="User Image" />
+                          <div className="card-content">
+                            <p>{groupUser.label}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+          {Object.keys(contacts).map((date: any) => {
+            return (
+              <>
+                <div
+                  className="friday-january-26th"
+                  style={{ background: "white" }}
+                >
+                  {moment(date).format("MMM dddd DD")}
+                </div>
+
+                
+                {contacts[date].map((contact: any) => {
+                  if (currentUser.email !== contact.email) {
+                    return (
+                      <div className="div24 single_dist_chat" key={contact.id}>
+                        <div className="message">
+                          <div className="avatar1">
+                            <img className="avatar-icon1" alt="" src={avatar} />
+                            <div className="avatar-online-indicator">
+                              <img alt="" src={onlineShow} />
+                            </div>
+                          </div>
+                          <div className="message1">
+                            <div
+                              className="hihow-are-things-with-our-ill-wrapper"
+                              style={{ background: "transparent" }}
+                            >
+                              {
+                                contact.is_image === 0 ?<div className="hihow-are-things"> {contact.message}</div>:<div className="hihow-are-things" style={{background:"white"}} ><div className="preview_img_parent">
+                            <img
+                              src={`${DOCOTEAM_API}/group_chat_images/${contact.message}`}
+                              alt="Preview"
+                              id="preview_img"
+                            />
+                          </div>
+                          </div>
+                                }
 
 
-  
- }
-          {/* showing chats on selection */}
-          {contacts.map((contact) => {
-            if (currentUser.email !== contact.email) {
-              return (
-                <div className="div24" key={contact.id}>
-                  <div className="message">
-                    <div className="avatar1">
-                      <img className="avatar-icon1" alt="" src={avatar} />
-                      <div className="avatar-online-indicator">
-                        <img alt="" src={onlineShow} />
-                      </div>
-                    </div>
-                    <div className="message1">
-                      <div className="hihow-are-things-with-our-ill-wrapper">
-
-                      
-
-                        <div className="hihow-are-things">
-                          <div>{contact.email}</div>
-                          {contact.message}
+                              
+                            </div>
+                            <div className="wrapper3">
+                              <div className="div16">
+                                {moment(contact.created_at).format("h:mm a")}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="wrapper3">
-                        <div className="div16">{moment(contact.created_at).format('h:mm a')}</div>
+                    );
+                  } else {
+                    return (
+                      <div className="message7" key={contact.id}>
+                        <div className="message8">
+                          <div
+                            className="hi-im-working-on-the-final-sc-wrapper for_delete"
+                            onMouseEnter={() => handleMouseEnter(contact.id)}
+                            onMouseLeave={() => handleMouseLeave(contact.id)}
+                          >
+                            {deleteIcons[contact.id] && (
+                              <div className="delete_button_group">
+                                <RiDeleteBin6Line
+                                  className="delete-icon"
+                                  onClick={() =>
+                                    handleDeleteMessage(contact.id)
+                                  }
+                                />
+                              </div>
+                            )}
+                            
+                                 {
+                                contact.is_image === 0 ?<div className="hihow-are-things"> {contact.message}</div>:<div className="hihow-are-things" style={{background:"white"}} ><div className="preview_img_parent">
+                            <img
+                              src={`${DOCOTEAM_API}/group_chat_images/${contact.message}`}
+                              alt="Preview"
+                              id="preview_img"
+                            />
+                          </div>
+                          </div>
+                                }
+                        
+                          </div>
+                          <div className="wrapper6">
+                            <div className="div16">
+                              {moment(contact.created_at).format("h:mm a")}
+                            </div>
+                          </div>
+                        </div>
+                        <img className="avatar-icon1" alt="" src={avatar} />
                       </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            } else {
-              return (
-                <div className="message7" key={contact.id}>
-                  <div className="message8">
-                    <div className="hi-im-working-on-the-final-sc-wrapper for_delete"
-                      onMouseEnter={() => handleMouseEnter(contact.id)}
-                      onMouseLeave={() => handleMouseLeave(contact.id)}
-
-                    >
-                    { deleteIcons[contact.id] && (
-                                  <div className="delete_button_group">
-                                    <RiDeleteBin6Line
-                                      className="delete-icon"
-                                      onClick={() =>
-                                        handleDeleteMessage(contact.id)
-                                      }
-                                    />
-                                  </div>
-                                )}
-
-
-                      <div className="hihow-are-things">
-                        <div>{contact.email}</div>
-                        {contact.message}
-                      </div>
-                    </div>
-                    <div className="wrapper6">
-                      <div className="div16">{moment(contact.created_at).format('h:mm a')}</div>
-                    </div>
-                  </div>
-                  <img className="avatar-icon1" alt="" src={avatar} />
-                </div>
-              );
-            }
+                    );
+                  }
+                })}
+              </>
+            );
           })}
-          {/* showing chats on selection */}
-          <div ref={singleChatDivRef}></div>
 
+          <div ref={groupChatDivRef}></div>
+          {previewImage && (
+            <>
+              <div className="preview_img_parent">
+                <span onClick={cancelPreview} className="cancel-btn">
+                  <MdCancel />
+                </span>
 
+                <img src={previewImage} alt="Preview" id="preview_img" />
+              </div>
+            </>
+          )}
         </div>
+        {/* ------------------- */}
       </div>
       <div className="avatar-parent7">
         <img className="avatar-icon" alt="" src={avatar} />
@@ -298,8 +368,41 @@ function Group({ lastInsertedGroupId, groupId  }: any) {
                 onClick={messageStart}
                 icon={faPaperPlane}
               />
-              <img className="info-circle-icon" alt="" src={emoji} />
-              <img className="info-circle-icon" alt="" src={fileShare} />
+              <span className="emoji_parent">
+                {showPicker && (
+                  <span className="picker_parent">
+                    <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+                  </span>
+                )}
+                <img
+                  className="info-circle-icon"
+                  alt=""
+                  src={emoji}
+                  onClick={() => setShowPicker(!showPicker)}
+                />
+              </span>
+              <span>
+                <form ref={previewImgFormRef} encType="multipart/form-data">
+                  <div className="file_upload_parent">
+                    <label htmlFor="fileInput" className="file_upload_label">
+                      <img
+                        className="file_upload_icon"
+                        alt=""
+                        src={fileShare}
+                        id="file_upload_button"
+                      />
+                    </label>
+                    <input
+                      type="file"
+                      id="fileInput"
+                      className="file_upload_input"
+                      onChange={handleFileInputChange}
+                    />
+                  </div>
+                </form>
+              </span>
+
+              
             </div>
           </div>
           <div className="hint-text">This is a hint text to help user.</div>

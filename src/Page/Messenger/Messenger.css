@@ -1142,6 +1142,7 @@
     text-align: start;
     border: none;
   }
+  
   #user_drop_down_menu{
     height: 300px;
     overflow: auto;
@@ -1218,3 +1219,25 @@
 .single_dist_chat .hihow-are-things{
     background-color: #F0F4F6;
 }
+.single_group_chat_icon_parent{
+    display: flex;
+    gap: 10px;
+}
+.chat_create_dropdown{
+    width: 300px;
+    background-color: transparent;
+    color: black;
+    text-align: start;
+    border: none;
+
+  }
+  #chat_create_button{
+    background-color: #6366F1;
+    
+  }
+  #group_add_button{
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  

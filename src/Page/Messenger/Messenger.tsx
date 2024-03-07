@@ -34,7 +34,7 @@ import Picker from "@emoji-mart/react";
 import { MdCancel } from "react-icons/md";
 import {DOCOTEAM_API} from  "../../config";
 import AgoTime from "../../Component/AgoTime";
-
+import { MdGroupAdd } from "react-icons/md";
 interface IChatMessage {
   id: number;
   email: string;
@@ -98,11 +98,12 @@ const Messenger = () => {
     null
   );
   const [previewImage, setPreviewImage] = useState<any>(undefined);
+  const [groupChatLoad, setGroupChatLoad] = useState<any>(false);
 
   const handleShowGroupNameChange = () => {
     setChangeGroupName("");
     setShowGroupSaveButton(true);
-    setShowGroupName(true);
+    setShowGroupName(prevState => !prevState);
   };
   const handleSaveGroupName = () => {
     post("/saveGroup", {
@@ -134,6 +135,7 @@ const Messenger = () => {
   };
 
   const handleSelectUser = (selectedUser: IUserState) => {
+    setSelectedGroup(null)
     setShowGroups(false);
 
     setShowDefaultChatPage(false);
@@ -211,6 +213,7 @@ const Messenger = () => {
   };
 
   const handleSelectedGroup = (group: any) => {
+
     setCheckSelectedGroup(null);
     setSelectedGroup(group);
     setGroupId(group.group_id);
@@ -220,7 +223,18 @@ const Messenger = () => {
     setShowChats(false);
     setSelectedUser(null)
   };
+  const handleGroupIdToLoadLastMsg = useCallback( (groupId:any) =>{
+    // alert('group click by other browser' + groupId)
+    setGroupChatLoad(true)
 
+  },[])
+  const handleUserAdded = useCallback((data:any)=>{
+    alert('you are added to Group:' + data.lastAddedGroupMember.group_id)
+
+  },[])
+  const handleToRecieversMessageGroup = useCallback((data:any)=>{
+    setGroupChatLoad(true)
+  },[])
   const handleChatDeleted = (data: any) => {
     post("/getAllChats", {
       sender: data.currentUserEmail,
@@ -241,6 +255,12 @@ const Messenger = () => {
     socket?.on("userOnline", handleUserOnline);
     socket?.on("userOffline", handleUserOffline);
     socket?.on("chatDeleted", handleChatDeleted);
+    socket?.on("groupIdToLoadLastMsg", handleGroupIdToLoadLastMsg);
+    socket?.on("userAdded", handleUserAdded);
+    socket?.on("toRecieversMessageGroup", handleToRecieversMessageGroup);
+    
+    
+
 
     return () => {
       socket?.off("toSender", handleToSender);
@@ -249,16 +269,14 @@ const Messenger = () => {
       socket?.off("userOnline", handleUserOnline);
       socket?.off("userOffline", handleUserOffline);
       socket?.off("chatDeleted", handleChatDeleted);
+    socket?.off("groupIdToLoadLastMsg", handleGroupIdToLoadLastMsg);
+    socket?.off("userAdded", handleUserAdded);
+    socket?.off("toRecieversMessageGroup", handleToRecieversMessageGroup);
+
+
+
     };
-  }, [
-    handleOnline,
-    handleToDist,
-    handleToSender,
-    handleUserOffline,
-    handleUserOnline,
-    socket,
-    userOnline,
-  ]);
+  }, [handleGroupIdToLoadLastMsg, handleOnline, handleToDist, handleToRecieversMessageGroup, handleToSender, handleUserAdded, handleUserOffline, handleUserOnline, socket, userOnline]);
 
   useEffect(() => {
     dispatch(setAuthUser(getAuthenticUser()));
@@ -280,12 +298,13 @@ const Messenger = () => {
 
   useEffect(() => {
     currentUser.email &&
+    
       post("/allGroups", { currentUserEmail: currentUser.email }).then(
         (data) => {
           setAllGroups(data);
         }
       );
-  }, [currentUser.email]);
+  }, [currentUser.email,groupChatLoad]);
 
   useEffect(() => {
     post("/saveGroupMember", {
@@ -370,10 +389,10 @@ const Messenger = () => {
   }, [previewImage]);
 
   useEffect(()=>{
-    console.log(`if chat messages load or selected`)
-    console.log(selectedUser)
+    setGroupChatLoad(false)
 
-  },[selectedUser,bothChatMessages])
+  },[groupChatLoad])
+  
 
   return (
     <Layout>
@@ -383,13 +402,61 @@ const Messenger = () => {
           <div className="contacts custom_scroll">
             <div className="all-messages-parent">
               <div className="all-messages">All Messages</div>
+              <div className="single_group_chat_icon_parent">
               <div
-                className="button showGroupNameButton"
+                className="button showGroupNameButton group_add_button"
                 onClick={handleShowGroupNameChange}
+                id="group_add_button"
               >
                 {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
-                <FontAwesomeIcon icon={faPlus} />
+                
+                <MdGroupAdd />
+
               </div>
+              <div
+                className=""
+              >
+                {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
+                
+                
+                <Dropdown>
+                      <Dropdown.Toggle id="chat_create_button"> <FontAwesomeIcon icon={faPlus} /> </Dropdown.Toggle>
+                      <Dropdown.Menu
+                        id=""
+                        className="custom_scroll chat_create_dropdown"
+                      >
+                        {contacts &&
+                          contacts.map((contact) => {
+                            return (
+                              <Dropdown.Item href="#" key={contact.id}>
+                                <div
+                                  className="avatar-parent"
+                                  onClick={() => handleSelectUser(contact)}
+                                >
+                                  <div className="avatar">
+                                    <img
+                                      className="avatar-icon1"
+                                      alt=""
+                                      src={avatar}
+                                    />
+                                    <div className="avatar-online-indicator">
+                                      <img alt="" src="" />
+                                    </div>
+                                  </div>
+
+                                  <div className="text">
+                                    <div>{contact.name}</div>
+                                  </div>
+                                </div>
+                              </Dropdown.Item>
+                            );
+                          })}
+                      </Dropdown.Menu>
+                  </Dropdown>
+
+              </div>
+              </div>
+              
             </div>
             <div className="contacts-child" />
             {/* group */}
@@ -452,7 +519,7 @@ const Messenger = () => {
                       backgroundColor:
                         checkSelectedGroup !== null
                           ? ""
-                          : selectedGroup === group
+                          : selectedGroup &&  selectedGroup.group_id === group.group_id
                           ? "#6366F1"
                           : "white",
                     }}
@@ -475,21 +542,27 @@ const Messenger = () => {
                       <div className="text">
                         <div
                           className={
-                            selectedGroup === group ? "" : "bogdan-krivenchenko"
+                              selectedGroup === group ? "" : "bogdan-krivenchenko"
                           }
                           style={
-                            selectedGroup === group ? { color: "white" } : {}
+                            selectedGroup &&  selectedGroup.group_id === group.group_id ? { color: "white" } : {}
                           }
                         >
                           {group.group_name}
                         </div>
-                        <div className="hi-how-are">
-                          Hi! this is {group.group_name}
+                        <div className="hi-how-are" style={
+                            selectedGroup &&  selectedGroup.group_id === group.group_id ? { color: "white" } : {}
+                          }>
+                          {group.message}
                         </div>
                       </div>
                     </div>
                     <div className="parent">
-                      <div className="div16">10:30 AM</div>
+                      <div className="div16"
+                      style={
+                        selectedGroup &&  selectedGroup.group_id === group.group_id ? { color: "white" } : {}
+                      }
+                      ><AgoTime date={group.message_created_at} /></div>
                       <div className="ellipse" />
                     </div>
                   </div>
@@ -682,6 +755,10 @@ const Messenger = () => {
             <Group
               lastInsertedGroupId={lastInsertedGroupId}
               groupId={groupId && groupId}
+              setGroupChatLoad={setGroupChatLoad}
+              groupChatLoad = {groupChatLoad}
+              
+
             />
           )}
           {selectedUser && showChats && (
@@ -750,7 +827,7 @@ const Messenger = () => {
                               </div>
                               <div className="wrapper3">
                                 <div className="div16">
-                                  {moment(data.created_at).format("h:mm a")}
+                                {moment(data.created_at).format('h:mm a')}
                                 </div>
                               </div>
                             </div>
@@ -796,7 +873,7 @@ const Messenger = () => {
                             </div>
                             <div className="wrapper6">
                               <div className="div16">
-                                {moment(data.created_at).format("h:mm a")}
+                              {moment(data.created_at).format('h:mm a')}
                               </div>
                             </div>
                           </div>
@@ -833,6 +910,7 @@ const Messenger = () => {
                     </>
                   )}
                 </div>
+
               </div>
 
               <div className="avatar-parent7">
