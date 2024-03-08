@@ -20,6 +20,7 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { MdCancel } from "react-icons/md";
 import {DOCOTEAM_API} from  "../../config";
+import UploadChatFile from "../../Component/UploadFile/UploadChatFile";
 
 function Group({
   lastInsertedGroupId,
@@ -41,6 +42,15 @@ function Group({
   const [groupUsers, setGroupUsers] = useState<any[]>([]);
   const [showUserGroup, setShowUserGroup] = useState(true);
   const [previewImage, setPreviewImage] = useState<any>(undefined);
+    // modal 
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const handleUploadClose = () => {
+      setShowUploadModal(false);
+    };
+    const handleUploadClick = () => {
+      setShowUploadModal(true);
+    };
+    // modal 
   const handleChange = (selectedOptions: any) => {
     setSelectedOptions(selectedOptions);
     // lastInsertedGroupId
@@ -77,6 +87,7 @@ function Group({
       post("/getAllGroupChats", { group_id: data.groupId }).then((data) => {
         setContacts(data);
         setGroupChatLoad(true);
+        handleUploadClose()
         cancelPreview()
       });
     },
@@ -207,6 +218,14 @@ function Group({
 
   return (
     <div className="chat1">
+      
+      <UploadChatFile
+        uploadShow={showUploadModal}
+        setUploadShow={setShowUploadModal}
+        handleUploadClose={handleUploadClose}
+        setPreviewImage= {setPreviewImage}
+        messageStart = {messageStart}
+      />
       <div className="user-header">
         <AsyncSelect
           loadOptions={loadOption}
@@ -334,17 +353,7 @@ function Group({
           })}
 
           <div ref={groupChatDivRef}></div>
-          {previewImage && (
-            <>
-              <div className="preview_img_parent">
-                <span onClick={cancelPreview} className="cancel-btn">
-                  <MdCancel />
-                </span>
-
-                <img src={previewImage} alt="Preview" id="preview_img" />
-              </div>
-            </>
-          )}
+          
         </div>
         {/* ------------------- */}
       </div>
@@ -381,16 +390,18 @@ function Group({
                   onClick={() => setShowPicker(!showPicker)}
                 />
               </span>
-              <span>
-                <form ref={previewImgFormRef} encType="multipart/form-data">
-                  <div className="file_upload_parent">
-                    <label htmlFor="fileInput" className="file_upload_label">
-                      <img
+                  <img
                         className="file_upload_icon"
                         alt=""
                         src={fileShare}
                         id="file_upload_button"
+                        onClick={handleUploadClick}
                       />
+              {/* <span>
+                <form ref={previewImgFormRef} encType="multipart/form-data">
+                  <div className="file_upload_parent">
+                    <label htmlFor="fileInput" className="file_upload_label">
+                     
                     </label>
                     <input
                       type="file"
@@ -400,7 +411,7 @@ function Group({
                     />
                   </div>
                 </form>
-              </span>
+              </span> */}
 
               
             </div>

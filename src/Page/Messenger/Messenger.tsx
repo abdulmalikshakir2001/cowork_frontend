@@ -35,6 +35,7 @@ import { MdCancel } from "react-icons/md";
 import {DOCOTEAM_API} from  "../../config";
 import AgoTime from "../../Component/AgoTime";
 import { MdGroupAdd } from "react-icons/md";
+import UploadChatFile from "../../Component/UploadFile/UploadChatFile";
 interface IChatMessage {
   id: number;
   email: string;
@@ -59,6 +60,15 @@ const Messenger = () => {
 
   const dispatch = useAppDispatch();
   const [load, setLoad] = useState(false);
+  // modal 
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const handleUploadClose = () => {
+    setShowUploadModal(false);
+  };
+  const handleUploadClick = () => {
+    setShowUploadModal(true);
+  };
+  // modal 
   const [selectedUserName, setSelectedUserName] = useState<string | null>();
   const [selectedUserRole, setSelectedUserRole] = useState<string | null>();
   const [messages, setMessages] = useState<string[]>([]);
@@ -161,7 +171,9 @@ const Messenger = () => {
     });
   };
   const handleToSender = useCallback((data: any) => {
+    handleUploadClose()
     cancelPreview();
+
     setLoad(true);
     post("/getAllChats", {
       sender: currentUser.email,
@@ -386,6 +398,8 @@ const Messenger = () => {
   };
   useEffect(() => {
     afterPreviewImgRef.current?.scrollIntoView({ behavior: "smooth" });
+    
+    
   }, [previewImage]);
 
   useEffect(()=>{
@@ -398,6 +412,16 @@ const Messenger = () => {
     <Layout>
       <div className="mainContent">
         <div className="chat">
+          {/* modal  */}
+          {/* <button onClick={handleUploadClick}>Upload File</button> */}
+      <UploadChatFile
+        uploadShow={showUploadModal}
+        setUploadShow={setShowUploadModal}
+        handleUploadClose={handleUploadClose}
+        setPreviewImage= {setPreviewImage}
+        messageStart = {messageStart}
+      />
+          {/* modal */}
           {/* current */}
           <div className="contacts custom_scroll">
             <div className="all-messages-parent">
@@ -902,22 +926,7 @@ const Messenger = () => {
 
                   <div ref={singleChatDivRef}></div>
 
-                  {previewImage  && (
-                    <>
-                      <div className="preview_img_parent">
-                        <span onClick={cancelPreview} className="cancel-btn">
-                          <MdCancel />
-                        </span>
-
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          id="preview_img"
-                        />
-                      </div>
-                      <div ref={afterPreviewImgRef}></div>
-                    </>
-                  )}
+                  
                 </div>
 
               </div>
@@ -964,7 +973,17 @@ const Messenger = () => {
                       </span>
 
                       {/* =========== */}
-                      <span>
+                      <img
+                                className="file_upload_icon"
+                                alt=""
+                                src={fileShare}
+                                id="file_upload_button"
+                                onClick={handleUploadClick}
+                              />
+
+
+
+                      {/* <span>
                         <form
                           ref={previewImgFormRef}
                           encType="multipart/form-data"
@@ -974,22 +993,20 @@ const Messenger = () => {
                               htmlFor="fileInput"
                               className="file_upload_label"
                             >
-                              <img
-                                className="file_upload_icon"
-                                alt=""
-                                src={fileShare}
-                                id="file_upload_button"
-                              />
-                            </label>
-                            <input
+                              {/* onChange={handleFileInputChange} */}
+
+                            {/* </label> */}
+                            {/* <input
                               type="file"
                               id="fileInput"
                               className="file_upload_input"
-                              onChange={handleFileInputChange}
-                            />
-                          </div>
-                        </form>
-                      </span>
+                              {/* onChange={handleFileInputChange} */}
+
+                              
+                            {/* />  */}
+                          {/* </div> */}
+                        {/* </form> */}
+                      {/* </span> } */}
                       {/* ============================ */}
                     </div>
                   </div>
