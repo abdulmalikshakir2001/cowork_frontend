@@ -44,6 +44,7 @@ function Group({
   const [previewImage, setPreviewImage] = useState<any>(undefined);
     // modal 
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [fileUplaodOnServer,setFileUplaodOnServer] = useState(false)
     const handleUploadClose = () => {
       setShowUploadModal(false);
     };
@@ -89,6 +90,7 @@ function Group({
         setGroupChatLoad(true);
         handleUploadClose()
         cancelPreview()
+        setFileUplaodOnServer(true)
       });
     },
     [setGroupChatLoad]
@@ -225,6 +227,8 @@ function Group({
         handleUploadClose={handleUploadClose}
         setPreviewImage= {setPreviewImage}
         messageStart = {messageStart}
+        fileUplaodOnServer = {fileUplaodOnServer}
+        setFileUplaodOnServer = {setFileUplaodOnServer}
       />
       <div className="user-header">
         <AsyncSelect

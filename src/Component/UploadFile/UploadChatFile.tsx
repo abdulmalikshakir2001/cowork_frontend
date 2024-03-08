@@ -22,9 +22,11 @@ interface UploadChatFileProps {
     setUploadShow: (type: boolean) => void;
     setPreviewImage:any;
     messageStart:any;
+    fileUplaodOnServer:any;
+    setFileUplaodOnServer:any
 }
 
-const UploadChatFile = ({ uploadShow, setUploadShow, handleUploadClose,setPreviewImage,messageStart }: UploadChatFileProps) => {
+const UploadChatFile = ({ uploadShow, setUploadShow, handleUploadClose,setPreviewImage,messageStart,fileUplaodOnServer,setFileUplaodOnServer }: UploadChatFileProps) => {
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [members, setMembers] = useState([]);
     const [nickName, setNickName] = useState("");
@@ -111,6 +113,10 @@ const UploadChatFile = ({ uploadShow, setUploadShow, handleUploadClose,setPrevie
     const removeShare = (memberId: string) => {
         setShares((prevShares:any) => prevShares.filter((item:any) => item.id !== memberId));
     }
+    useEffect(()=>{
+        removeFile()
+        setFileUplaodOnServer(false)
+    },[fileUplaodOnServer, setFileUplaodOnServer])
 
 
     return (

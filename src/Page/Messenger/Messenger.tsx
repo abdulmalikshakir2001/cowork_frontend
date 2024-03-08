@@ -62,6 +62,7 @@ const Messenger = () => {
   const [load, setLoad] = useState(false);
   // modal 
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [fileUplaodOnServer,setFileUplaodOnServer] = useState(false)
   const handleUploadClose = () => {
     setShowUploadModal(false);
   };
@@ -172,6 +173,7 @@ const Messenger = () => {
   };
   const handleToSender = useCallback((data: any) => {
     handleUploadClose()
+    setFileUplaodOnServer(true)
     cancelPreview();
 
     setLoad(true);
@@ -420,6 +422,8 @@ const Messenger = () => {
         handleUploadClose={handleUploadClose}
         setPreviewImage= {setPreviewImage}
         messageStart = {messageStart}
+        fileUplaodOnServer = {fileUplaodOnServer}
+        setFileUplaodOnServer = {setFileUplaodOnServer}
       />
           {/* modal */}
           {/* current */}
