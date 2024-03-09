@@ -32,7 +32,7 @@ import moment from "moment";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { MdCancel } from "react-icons/md";
-import {DOCOTEAM_API} from  "../../config";
+import { DOCOTEAM_API } from "../../config";
 import AgoTime from "../../Component/AgoTime";
 import { MdGroupAdd } from "react-icons/md";
 import UploadChatFile from "../../Component/UploadFile/UploadChatFile";
@@ -40,14 +40,9 @@ interface IChatMessage {
   id: number;
   email: string;
   message: string;
-  is_image:string|number|boolean;
+  is_image: string | number | boolean;
   created_at: string;
 }
-
-
-
-
-
 
 const Messenger = () => {
   const singleChatDivRef = useRef<HTMLDivElement>(null);
@@ -60,16 +55,16 @@ const Messenger = () => {
 
   const dispatch = useAppDispatch();
   const [load, setLoad] = useState(false);
-  // modal 
+  // modal
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [fileUplaodOnServer,setFileUplaodOnServer] = useState(false)
+  const [fileUplaodOnServer, setFileUplaodOnServer] = useState(false);
   const handleUploadClose = () => {
     setShowUploadModal(false);
   };
   const handleUploadClick = () => {
     setShowUploadModal(true);
   };
-  // modal 
+  // modal
   const [selectedUserName, setSelectedUserName] = useState<string | null>();
   const [selectedUserRole, setSelectedUserRole] = useState<string | null>();
   const [messages, setMessages] = useState<string[]>([]);
@@ -110,11 +105,12 @@ const Messenger = () => {
   );
   const [previewImage, setPreviewImage] = useState<any>(undefined);
   const [groupChatLoad, setGroupChatLoad] = useState<any>(false);
+  const [allContacts, setAllContacts] = useState<any[]>([]);
 
   const handleShowGroupNameChange = () => {
     setChangeGroupName("");
     setShowGroupSaveButton(true);
-    setShowGroupName(prevState => !prevState);
+    setShowGroupName((prevState) => !prevState);
   };
   const handleSaveGroupName = () => {
     post("/saveGroup", {
@@ -146,7 +142,7 @@ const Messenger = () => {
   };
 
   const handleSelectUser = (selectedUser: IUserState) => {
-    setSelectedGroup(null)
+    setSelectedGroup(null);
     setShowGroups(false);
 
     setShowDefaultChatPage(false);
@@ -171,31 +167,37 @@ const Messenger = () => {
       setBothChatMessages(data);
     });
   };
-  const handleToSender = useCallback((data: any) => {
-    handleUploadClose()
-    setFileUplaodOnServer(true)
-    cancelPreview();
+  const handleToSender = useCallback(
+    (data: any) => {
+      handleUploadClose();
+      setFileUplaodOnServer(true);
+      cancelPreview();
 
-    setLoad(true);
-    post("/getAllChats", {
-      sender: currentUser.email,
-      reciever: selectedUser && selectedUser.email,
-    }).then((data) => {
-      setBothChatMessages(data);
-    });
-  }, [currentUser.email, selectedUser]);
-  const handleToDist = useCallback((data: any) => {
-    cancelPreview();
-    setLoad(true);
-    setDistUserEmail(data.email);
-    post("/getAllChats", {
-      sender: currentUser.email,
-      reciever: selectedUser && selectedUser.email,
-    }).then((data) => {
-      setBothChatMessages(data);
-    });
-    // setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
-  }, [currentUser.email, selectedUser]);
+      setLoad(true);
+      post("/getAllChats", {
+        sender: currentUser.email,
+        reciever: selectedUser && selectedUser.email,
+      }).then((data) => {
+        setBothChatMessages(data);
+      });
+    },
+    [currentUser.email, selectedUser]
+  );
+  const handleToDist = useCallback(
+    (data: any) => {
+      cancelPreview();
+      setLoad(true);
+      setDistUserEmail(data.email);
+      post("/getAllChats", {
+        sender: currentUser.email,
+        reciever: selectedUser && selectedUser.email,
+      }).then((data) => {
+        setBothChatMessages(data);
+      });
+      // setBothChatMessages((bothChatMessage) => [...bothChatMessage, data]);
+    },
+    [currentUser.email, selectedUser]
+  );
   const handleOnline = useCallback(
     (data: any) => {
       socket?.emit("changeOnlineStatus", { email: data.onelineUserEmail });
@@ -227,7 +229,6 @@ const Messenger = () => {
   };
 
   const handleSelectedGroup = (group: any) => {
-
     setCheckSelectedGroup(null);
     setSelectedGroup(group);
     setGroupId(group.group_id);
@@ -235,20 +236,18 @@ const Messenger = () => {
     setShowGroups(true);
     setShowDefaultChatPage(false);
     setShowChats(false);
-    setSelectedUser(null)
+    setSelectedUser(null);
   };
-  const handleGroupIdToLoadLastMsg = useCallback( (groupId:any) =>{
+  const handleGroupIdToLoadLastMsg = useCallback((groupId: any) => {
     // alert('group click by other browser' + groupId)
-    setGroupChatLoad(true)
-
-  },[])
-  const handleUserAdded = useCallback((data:any)=>{
-    alert('you are added to Group:' + data.lastAddedGroupMember.group_id)
-
-  },[])
-  const handleToRecieversMessageGroup = useCallback((data:any)=>{
-    setGroupChatLoad(true)
-  },[])
+    setGroupChatLoad(true);
+  }, []);
+  const handleUserAdded = useCallback((data: any) => {
+    alert("you are added to Group:" + data.lastAddedGroupMember.group_id);
+  }, []);
+  const handleToRecieversMessageGroup = useCallback((data: any) => {
+    setGroupChatLoad(true);
+  }, []);
   const handleChatDeleted = (data: any) => {
     post("/getAllChats", {
       sender: data.currentUserEmail,
@@ -272,9 +271,6 @@ const Messenger = () => {
     socket?.on("groupIdToLoadLastMsg", handleGroupIdToLoadLastMsg);
     socket?.on("userAdded", handleUserAdded);
     socket?.on("toRecieversMessageGroup", handleToRecieversMessageGroup);
-    
-    
-
 
     return () => {
       socket?.off("toSender", handleToSender);
@@ -283,14 +279,22 @@ const Messenger = () => {
       socket?.off("userOnline", handleUserOnline);
       socket?.off("userOffline", handleUserOffline);
       socket?.off("chatDeleted", handleChatDeleted);
-    socket?.off("groupIdToLoadLastMsg", handleGroupIdToLoadLastMsg);
-    socket?.off("userAdded", handleUserAdded);
-    socket?.off("toRecieversMessageGroup", handleToRecieversMessageGroup);
-
-
-
+      socket?.off("groupIdToLoadLastMsg", handleGroupIdToLoadLastMsg);
+      socket?.off("userAdded", handleUserAdded);
+      socket?.off("toRecieversMessageGroup", handleToRecieversMessageGroup);
     };
-  }, [handleGroupIdToLoadLastMsg, handleOnline, handleToDist, handleToRecieversMessageGroup, handleToSender, handleUserAdded, handleUserOffline, handleUserOnline, socket, userOnline]);
+  }, [
+    handleGroupIdToLoadLastMsg,
+    handleOnline,
+    handleToDist,
+    handleToRecieversMessageGroup,
+    handleToSender,
+    handleUserAdded,
+    handleUserOffline,
+    handleUserOnline,
+    socket,
+    userOnline,
+  ]);
 
   useEffect(() => {
     dispatch(setAuthUser(getAuthenticUser()));
@@ -308,17 +312,27 @@ const Messenger = () => {
         setUsersWithLastChat(data);
       }
     );
+    post("/allContacts", { currentUserEmail: currentUser.email }).then(
+      (data) => {
+        setAllContacts(data);
+      }
+    );
   }, [currentUser, userOnline, load]);
 
   useEffect(() => {
     currentUser.email &&
-    
       post("/allGroups", { currentUserEmail: currentUser.email }).then(
         (data) => {
           setAllGroups(data);
         }
       );
-  }, [currentUser.email,groupChatLoad]);
+      post("/allContacts", { currentUserEmail: currentUser.email }).then(
+        (data) => {
+          setAllContacts(data);
+        }
+      );
+  }, [currentUser.email, groupChatLoad]);
+  
 
   useEffect(() => {
     post("/saveGroupMember", {
@@ -331,6 +345,11 @@ const Messenger = () => {
           post("/allGroups", { currentUserEmail: currentUser.email }).then(
             (data) => {
               setAllGroups(data);
+            }
+          );
+          post("/allContacts", { currentUserEmail: currentUser.email }).then(
+            (data) => {
+              setAllContacts(data);
             }
           );
       }
@@ -361,7 +380,6 @@ const Messenger = () => {
     singleChatDivRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [bothChatMessages]);
 
-  
   // emoji picker
   const [showPicker, setShowPicker] = useState(false);
   const handleEmojiSelect = (emoji: any) => {
@@ -372,7 +390,7 @@ const Messenger = () => {
     setLoad(false);
   }, [usersWithLastChat]);
   // file upload=============================================================
-  
+
   const previewImgFormRef = useRef<any>();
 
   // Function to handle file input change
@@ -400,15 +418,11 @@ const Messenger = () => {
   };
   useEffect(() => {
     afterPreviewImgRef.current?.scrollIntoView({ behavior: "smooth" });
-    
-    
   }, [previewImage]);
 
-  useEffect(()=>{
-    setGroupChatLoad(false)
-
-  },[groupChatLoad])
-  
+  useEffect(() => {
+    setGroupChatLoad(false);
+  }, [groupChatLoad]);
 
   return (
     <Layout>
@@ -416,79 +430,79 @@ const Messenger = () => {
         <div className="chat">
           {/* modal  */}
           {/* <button onClick={handleUploadClick}>Upload File</button> */}
-      <UploadChatFile
-        uploadShow={showUploadModal}
-        setUploadShow={setShowUploadModal}
-        handleUploadClose={handleUploadClose}
-        setPreviewImage= {setPreviewImage}
-        messageStart = {messageStart}
-        fileUplaodOnServer = {fileUplaodOnServer}
-        setFileUplaodOnServer = {setFileUplaodOnServer}
-      />
+          <UploadChatFile
+            uploadShow={showUploadModal}
+            setUploadShow={setShowUploadModal}
+            handleUploadClose={handleUploadClose}
+            setPreviewImage={setPreviewImage}
+            messageStart={messageStart}
+            fileUplaodOnServer={fileUplaodOnServer}
+            setFileUplaodOnServer={setFileUplaodOnServer}
+          />
           {/* modal */}
           {/* current */}
           <div className="contacts custom_scroll">
             <div className="all-messages-parent">
               <div className="all-messages">All Messages</div>
               <div className="single_group_chat_icon_parent">
-              <div
-                className="button showGroupNameButton group_add_button"
-                onClick={handleShowGroupNameChange}
-                id="group_add_button"
-              >
-                {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
-                
-                <MdGroupAdd />
+                <div
+                  className="button showGroupNameButton group_add_button"
+                  onClick={handleShowGroupNameChange}
+                  id="group_add_button"
+                >
+                  {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
 
-              </div>
-              <div
-                className=""
-              >
-                {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
-                
-                
-                <Dropdown>
-                      <Dropdown.Toggle id="chat_create_button"> <FontAwesomeIcon icon={faPlus} /> </Dropdown.Toggle>
-                      <Dropdown.Menu
-                        id=""
-                        className="custom_scroll chat_create_dropdown"
-                      >
-                        {contacts &&
-                          contacts.map((contact) => {
-                            return (
-                              <Dropdown.Item href="#" key={contact.id}>
-                                <div
-                                  className="avatar-parent"
-                                  onClick={() => handleSelectUser(contact)}
-                                >
-                                  <div className="avatar">
+                  <MdGroupAdd />
+                </div>
+                <div className="">
+                  {/* <img className="info-circle-icon" alt="" src={plusBtn} /> */}
+
+                  <Dropdown>
+                    <Dropdown.Toggle id="chat_create_button">
+                      {" "}
+                      <FontAwesomeIcon icon={faPlus} />{" "}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu
+                      id=""
+                      className="custom_scroll chat_create_dropdown"
+                    >
+                      {contacts &&
+                        contacts.map((contact) => {
+                          return (
+                            <Dropdown.Item href="#" key={contact.id}>
+                              <div
+                                className="avatar-parent"
+                                onClick={() => handleSelectUser(contact)}
+                              >
+                                <div className="avatar">
+                                  <img
+                                    className="avatar-icon1"
+                                    alt=""
+                                    src={avatar}
+                                  />
+                                  <div className="avatar-online-indicator">
                                     <img
-                                      className="avatar-icon1"
                                       alt=""
-                                      src={avatar}
-                                    />
-                                    <div className="avatar-online-indicator">
-                                      <img alt="" src={
+                                      src={
                                         contact.online_status === 1
-                                        ? onlineShow
-                                        : "offline"
-                                      } />
-                                    </div>
-                                  </div>
-
-                                  <div className="text">
-                                    <div>{contact.name}</div>
+                                          ? onlineShow
+                                          : "offline"
+                                      }
+                                    />
                                   </div>
                                 </div>
-                              </Dropdown.Item>
-                            );
-                          })}
-                      </Dropdown.Menu>
-                  </Dropdown>
 
+                                <div className="text">
+                                  <div>{contact.name}</div>
+                                </div>
+                              </div>
+                            </Dropdown.Item>
+                          );
+                        })}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
               </div>
-              </div>
-              
             </div>
             <div className="contacts-child" />
             {/* group */}
@@ -540,138 +554,199 @@ const Messenger = () => {
                 </div>
               </div>
             )}
-            {allGroups &&
-              allGroups.map((group: any) => {
-                return (
-                  <div
-                    className="contact1"
-                    style={{
-                      marginLeft: "auto",
-                      marginRight: "auto",
-                      backgroundColor:
-                        checkSelectedGroup !== null
-                          ? ""
-                          : selectedGroup &&  selectedGroup.group_id === group.group_id
-                          ? "#6366F1"
-                          : "white",
-                    }}
-                    onClick={() => handleSelectedGroup(group)}
-                    key={group.id}
-                  >
-                    <div className="avatar-parent all_group_avatar_parent">
-                      <IconContext.Provider
-                        value={{
-                          color: "black",
-                          className: "global-class-name",
-                          size: "2em",
-                        }}
-                      >
-                        <div>
-                          <MdGroup />
-                        </div>
-                      </IconContext.Provider>
 
-                      <div className="text">
-                        <div
-                          className={
-                              selectedGroup === group ? "" : "bogdan-krivenchenko"
-                          }
-                          style={
-                            selectedGroup &&  selectedGroup.group_id === group.group_id ? { color: "white" } : {}
-                          }
-                        >
-                          {group.group_name}
-                        </div>
-                        <div className="hi-how-are" style={
-                            selectedGroup &&  selectedGroup.group_id === group.group_id ? { color: "white" } : {}
-                          }>
-                          {group.message}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="parent">
-                      <div className="div16"
-                      style={
-                        selectedGroup &&  selectedGroup.group_id === group.group_id ? { color: "white" } : {}
-                      }
-                      ><AgoTime date={group.message_created_at} /></div>
-                      <div className="ellipse" />
-                    </div>
-                  </div>
-                );
-              })}
 
-            {/* group */}
 
-            <div className="contact">
-              {usersWithLastChat &&
-                usersWithLastChat.map((contact) => {
-                  return (
-                    <div
-                      className="contact1"
-                      onClick={() => handleSelectUser(contact)}
-                      key={contact.id}
-                      style={
-                        {
-                        backgroundColor:
-                          checkSelectedGroup === null
-                            ? ""
-                             :  selectedUser &&  selectedUser.email === contact.email
-                            ? "#6366F1"
-                            : "white",
-                      }
-                    }
-                    >
-                      <div className="avatar-parent">
-                        <div className="avatar">
-                          <img className="avatar-icon1" alt="" src={avatar} />
-                          <div className="avatar-online-indicator">
-                            <img
-                              alt=""
-                              src={
-                                contact.online_status === 1
-                                  ? onlineShow
-                                  : "offline"
-                              }
-                            />
-                          </div>
-                        </div>
+              {/* =================================== */}
 
-                        <div className="text">
-                          <div
-                            className={
-                               selectedUser === contact
-                                ? ""
-                                : "bogdan-krivenchenko"
-                            }
-                            style={
-                              selectedUser && selectedUser.email === contact.email ? { color: "white" } : {}
-                            }
-                          >
-                            {contact.name}
-                          </div>
-                          <div className="hi-how-are" id="hi-how-are" style={
-                              selectedUser && selectedUser.email === contact.email ? { color: "white" } : {}
-                            }>
-                            {contact.message}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="parent">
-                        <div className="div16" style={
-                              selectedUser && selectedUser.email === contact.email ? { color: "white" } : {}
-                            }>
+              {
+                allContacts.map((contact)=>{
+                  if(contact.group_id !== undefined){
+                    return (
+                            <div
+                              className="contact1"
+                              style={{
+                                marginLeft: "auto",
+                                marginRight: "auto",
+                                backgroundColor:
+                                  checkSelectedGroup !== null
+                                    ? ""
+                                    : selectedGroup &&
+                                      selectedGroup.group_id === contact.group_id
+                                    ? "#6366F1"
+                                    : "white",
+                              }}
+                              onClick={() => handleSelectedGroup(contact)}
+                              key={contact.id}
+                            >
+                              <div className="avatar-parent">
+                                <IconContext.Provider
+                                  value={{
+                                    color: "black",
+                                    className: "global-class-name",
+                                    size: "2em",
+                                  }}
+                                >
+                                  <div>
+                                    <MdGroup />
+                                  </div>
+                                </IconContext.Provider>
+          
+                                <div className="text">
+                                  <div
+                                    className={
+                                      selectedGroup === contact ? "" : "bogdan-krivenchenko"
+                                    }
+                                    style={
+                                      selectedGroup &&
+                                      selectedGroup.group_id === contact.group_id
+                                        ? { color: "white" }
+                                        : {}
+                                    }
+                                  >
+                                    {contact.group_name}
+                                  </div>
+                                  <div
+                                    className="hi-how-are"
+                                    style={
+                                      selectedGroup &&
+                                      selectedGroup.group_id === contact.group_id
+                                        ? { color: "white" }
+                                        : {}
+                                    }
+                                  >
+                                    {contact.message}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="parent">
+                                <div
+                                  className="div16"
+                                  style={
+                                    selectedGroup &&
+                                    selectedGroup.group_id === contact.group_id
+                                      ? { color: "white" }
+                                      : {}
+                                  }
+                                >
+                                  <AgoTime date={contact.message_created_at} />
+                                </div>
+                                <div className="ellipse" />
+                              </div>
+                            </div>
                           
-                          {
-                          <AgoTime date={contact.last_message_date} />
-                          }
-                        </div>
-                        <div className="ellipse" />
-                      </div>
+                        
+
+
+
+
+
+                        )
+                  }
+                  else{
+                    return (
+                      <div className="contact">
+              
+                      
+                      
+                            <div
+                              className="contact1"
+                              onClick={() => handleSelectUser(contact)}
+                              key={contact.id}
+                              style={{
+                                backgroundColor:
+                                  checkSelectedGroup === null
+                                    ? ""
+                                    : selectedUser &&
+                                      selectedUser.email === contact.email
+                                    ? "#6366F1"
+                                    : "white",
+                              }}
+                            >
+                              <div className="avatar-parent">
+                                <div className="avatar">
+                                  <img className="avatar-icon1" alt="" src={avatar} />
+                                  <div className="avatar-online-indicator">
+                                    <img
+                                      alt=""
+                                      src={
+                                        contact.online_status === 1
+                                          ? onlineShow
+                                          : "offline"
+                                      }
+                                    />
+                                  </div>
+                                </div>
+        
+                                <div className="text">
+                                  <div
+                                    className={
+                                      selectedUser === contact
+                                        ? ""
+                                        : "bogdan-krivenchenko"
+                                    }
+                                    style={
+                                      selectedUser &&
+                                      selectedUser.email === contact.email
+                                        ? { color: "white" }
+                                        : {}
+                                    }
+                                  >
+                                    {contact.name}
+                                  </div>
+                                  <div
+                                    className="hi-how-are"
+                                    id="hi-how-are"
+                                    style={
+                                      selectedUser &&
+                                      selectedUser.email === contact.email
+                                        ? { color: "white" }
+                                        : {}
+                                    }
+                                  >
+                                    {contact.message}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="parent">
+                                <div
+                                  className="div16"
+                                  style={
+                                    selectedUser && selectedUser.email === contact.email
+                                      ? { color: "white" }
+                                      : {}
+                                  }
+                                >
+                                  {<AgoTime date={contact.last_message_date} />}
+                                </div>
+                                <div className="ellipse" />
+                              </div>
+                            </div>
+                      
+                      
                     </div>
-                  );
-                })}
-            </div>
+                      
+                      
+                      )
+
+                  }
+
+                })
+              }
+
+
+
+            
+
+
+
+
+
+
+              {/* =================================== */}
+
+
+
           </div>
 
           {/* default  */}
@@ -703,12 +778,14 @@ const Messenger = () => {
                                       src={avatar}
                                     />
                                     <div className="avatar-online-indicator">
-                                      <img alt="" src={
-                                        contact.online_status === 1
-                                        ? onlineShow
-                                        : "offline"
-
-                                      } />
+                                      <img
+                                        alt=""
+                                        src={
+                                          contact.online_status === 1
+                                            ? onlineShow
+                                            : "offline"
+                                        }
+                                      />
                                     </div>
                                   </div>
 
@@ -793,9 +870,7 @@ const Messenger = () => {
               lastInsertedGroupId={lastInsertedGroupId}
               groupId={groupId && groupId}
               setGroupChatLoad={setGroupChatLoad}
-              groupChatLoad = {groupChatLoad}
-              
-
+              groupChatLoad={groupChatLoad}
             />
           )}
           {selectedUser && showChats && (
@@ -825,114 +900,136 @@ const Messenger = () => {
 
               <div className="chat2 custom_scroll">
                 <div className="friday-january-26th-parent">
-            {/* ------------------------------------ */}
-                  {
-                    Object.keys(bothChatMessages).map((date)=>{
-                      return (
+                  {/* ------------------------------------ */}
+                  {Object.keys(bothChatMessages).map((date) => {
+                    return (
                       <>
-                  <div className="friday-january-26th" style={{background:"white"}}>
-                    { moment(date).format('MMM dddd DD') }
-                  </div>
-                  {bothChatMessages[date].map((data:any) => {
-                    if (data.email === selectedUser.email) {
-                      return (
-                        <div className="div24 single_dist_chat" key={data.id}>
-                          <div className="message">
-                            <div className="avatar1">
-                              <img
-                                className="avatar-icon1"
-                                alt=""
-                                src={avatar}
-                              />
-                              <div className="avatar-online-indicator">
-                                <img alt="" src={onlineShow} />
-                              </div>
-                            </div>
-                            <div className="message1">
-                              <div className="hihow-are-things-with-our-ill-wrapper" style={{background:"transparent"}}>
-                              {
-                                data.is_image === 0 ?<div className="hihow-are-things"> {data.message}</div>:<div className="hihow-are-things" style={{background:"white"}} ><div className="preview_img_parent">
-                            <img
-                              src={`${DOCOTEAM_API}/chat_images/${data.message}`}
-                              alt="Preview"
-                              id="preview_img"
-                            />
-                          </div>
-                          </div>
-                                }
-                              
-                              </div>
-                              <div className="wrapper3">
-                                <div className="div16">
-                                {moment(data.created_at).format('h:mm a')}
+                        <div
+                          className="friday-january-26th"
+                          style={{ background: "white" }}
+                        >
+                          {moment(date).format("MMM dddd DD")}
+                        </div>
+                        {bothChatMessages[date].map((data: any) => {
+                          if (data.email === selectedUser.email) {
+                            return (
+                              <div
+                                className="div24 single_dist_chat"
+                                key={data.id}
+                              >
+                                <div className="message">
+                                  <div className="avatar1">
+                                    <img
+                                      className="avatar-icon1"
+                                      alt=""
+                                      src={avatar}
+                                    />
+                                    <div className="avatar-online-indicator">
+                                      <img alt="" src={onlineShow} />
+                                    </div>
+                                  </div>
+                                  <div className="message1">
+                                    <div
+                                      className="hihow-are-things-with-our-ill-wrapper"
+                                      style={{ background: "transparent" }}
+                                    >
+                                      {data.is_image === 0 ? (
+                                        <div className="hihow-are-things">
+                                          {" "}
+                                          {data.message}
+                                        </div>
+                                      ) : (
+                                        <div
+                                          className="hihow-are-things"
+                                          style={{ background: "white" }}
+                                        >
+                                          <div className="preview_img_parent">
+                                            <img
+                                              src={`${DOCOTEAM_API}/chat_images/${data.message}`}
+                                              alt="Preview"
+                                              id="preview_img"
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="wrapper3">
+                                      <div className="div16">
+                                        {moment(data.created_at).format(
+                                          "h:mm a"
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    } else {
-                      return (
-                        <div className="message7">
-                          <div className="message8">
-                            <div
-                              className="hi-im-working-on-the-final-sc-wrapper for_delete"
-                              onMouseEnter={() => handleMouseEnter(data.id)}
-                              onMouseLeave={() => handleMouseLeave(data.id)}
-                              
-                            >
-                              {deleteIcons[data.id] && (
-                                <div className="delete_button">
-                                  <RiDeleteBin6Line
-                                    className="delete-icon"
-                                    onClick={() => handleDeleteMessage(data.id)}
-                                  />
+                            );
+                          } else {
+                            return (
+                              <div className="message7">
+                                <div className="message8">
+                                  <div
+                                    className="hi-im-working-on-the-final-sc-wrapper for_delete"
+                                    onMouseEnter={() =>
+                                      handleMouseEnter(data.id)
+                                    }
+                                    onMouseLeave={() =>
+                                      handleMouseLeave(data.id)
+                                    }
+                                  >
+                                    {deleteIcons[data.id] && (
+                                      <div className="delete_button">
+                                        <RiDeleteBin6Line
+                                          className="delete-icon"
+                                          onClick={() =>
+                                            handleDeleteMessage(data.id)
+                                          }
+                                        />
+                                      </div>
+                                    )}
+
+                                    {data.is_image === 0 ? (
+                                      <div className="hihow-are-things">
+                                        {" "}
+                                        {data.message}
+                                      </div>
+                                    ) : (
+                                      <div
+                                        className="hihow-are-things"
+                                        style={{ background: "white" }}
+                                      >
+                                        <div className="preview_img_parent">
+                                          <img
+                                            src={`${DOCOTEAM_API}/chat_images/${data.message}`}
+                                            alt="Preview"
+                                            id="preview_img"
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="wrapper6">
+                                    <div className="div16">
+                                      {moment(data.created_at).format("h:mm a")}
+                                    </div>
+                                  </div>
                                 </div>
-                              )}
-                              
-
-                                {
-                                data.is_image === 0 ?<div className="hihow-are-things"> {data.message}</div>:<div className="hihow-are-things" style={{background:"white"}} ><div className="preview_img_parent">
-                            <img
-                              src={`${DOCOTEAM_API}/chat_images/${data.message}`}
-                              alt="Preview"
-                              id="preview_img"
-                            />
-                          </div>
-                          </div>
-                                }
-                              
-                                
-                                
-
-
-                              
-                            </div>
-                            <div className="wrapper6">
-                              <div className="div16">
-                              {moment(data.created_at).format('h:mm a')}
+                                <img
+                                  className="avatar-icon1"
+                                  alt=""
+                                  src={avatar}
+                                />
                               </div>
-                            </div>
-                          </div>
-                          <img className="avatar-icon1" alt="" src={avatar} />
-                          
-                        </div>
-                      );
-                    }
+                            );
+                          }
+                        })}
+                      </>
+                    );
                   })}
-                  </>
-                      )
-                })
-                }
-            {/* ------------------------------------ */}
-
-
+                  {/* ------------------------------------ */}
 
                   <div ref={singleChatDivRef}></div>
-
-                  
                 </div>
-
               </div>
 
               <div className="avatar-parent7">
@@ -978,14 +1075,12 @@ const Messenger = () => {
 
                       {/* =========== */}
                       <img
-                                className="file_upload_icon"
-                                alt=""
-                                src={fileShare}
-                                id="file_upload_button"
-                                onClick={handleUploadClick}
-                              />
-
-
+                        className="file_upload_icon"
+                        alt=""
+                        src={fileShare}
+                        id="file_upload_button"
+                        onClick={handleUploadClick}
+                      />
 
                       {/* <span>
                         <form
@@ -999,17 +1094,16 @@ const Messenger = () => {
                             >
                               {/* onChange={handleFileInputChange} */}
 
-                            {/* </label> */}
-                            {/* <input
+                      {/* </label> */}
+                      {/* <input
                               type="file"
                               id="fileInput"
                               className="file_upload_input"
                               {/* onChange={handleFileInputChange} */}
 
-                              
-                            {/* />  */}
-                          {/* </div> */}
-                        {/* </form> */}
+                      {/* />  */}
+                      {/* </div> */}
+                      {/* </form> */}
                       {/* </span> } */}
                       {/* ============================ */}
                     </div>
