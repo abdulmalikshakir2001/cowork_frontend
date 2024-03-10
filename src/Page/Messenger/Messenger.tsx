@@ -508,6 +508,21 @@ const Messenger = () => {
 
   },[currentUser.email, dropDownsContact])
 
+  const handleUnArchiveChat = useCallback( (recieverEmail:any,conactId:any)=>{
+    setDropDownsContact({...dropDownsContact,[conactId]:false})
+
+    post('/deleteArchive',{sender:currentUser.email,reciever:recieverEmail}).then((data)=>{
+      // alert(recieverEmail + 'archived successfully')
+
+      post('/allContacts',{currentUserEmail:currentUser.email}).then((data)=>{
+        setAllContacts(data)
+      })
+      
+    })
+    
+
+  },[currentUser.email, dropDownsContact])
+
   // disabled mouse right button click 
   const [optionsDropdown,setOptionsDropdown]  = useState(false)
 
@@ -860,10 +875,24 @@ const Messenger = () => {
                                 dropDownsContact[contact.id] &&  
                                 <span className="contacts_option_dropdown">
                             <Dropdown.Menu show>
-                                  <Dropdown.Item href="#/action-1" onClick={(e) => {
-                                    (e as any).stopPropagation()
-                                     handleArchiveChat(contact.email,contact.id)
-                                  }} >Archive</Dropdown.Item>
+
+                              {
+                                contact.is_archive === 0 ? <Dropdown.Item href="#/action-1" onClick={(e) => {
+                                  (e as any).stopPropagation()
+                                   handleArchiveChat(contact.email,contact.id)
+                                }} >Archive</Dropdown.Item> : <Dropdown.Item href="#/action-1" onClick={(e) => {
+                                  (e as any).stopPropagation()
+                                   handleUnArchiveChat(contact.email,contact.id)
+                                }} >Un Archive</Dropdown.Item>
+
+                              }
+
+
+                                  
+
+
+
+
                            
                                 </Dropdown.Menu>
                                 </span>
