@@ -36,6 +36,13 @@ import { DOCOTEAM_API } from "../../config";
 import AgoTime from "../../Component/AgoTime";
 import { MdGroupAdd } from "react-icons/md";
 import UploadChatFile from "../../Component/UploadFile/UploadChatFile";
+import { MdOutlineFilterList } from "react-icons/md";
+import { FaAngleDown } from "react-icons/fa6";
+
+
+
+
+
 interface IChatMessage {
   id: number;
   email: string;
@@ -45,6 +52,9 @@ interface IChatMessage {
 }
 
 const Messenger = () => {
+  
+  
+  
   const singleChatDivRef = useRef<HTMLDivElement>(null);
   const afterPreviewImgRef = useRef<HTMLDivElement>(null);
   const currentUser = useAppSelector(selectAuthUser); // this object contain email,role,name -->focus
@@ -326,13 +336,12 @@ const Messenger = () => {
           setAllGroups(data);
         }
       );
-      post("/allContacts", { currentUserEmail: currentUser.email }).then(
-        (data) => {
-          setAllContacts(data);
-        }
-      );
+    post("/allContacts", { currentUserEmail: currentUser.email }).then(
+      (data) => {
+        setAllContacts(data);
+      }
+    );
   }, [currentUser.email, groupChatLoad]);
-  
 
   useEffect(() => {
     post("/saveGroupMember", {
@@ -347,11 +356,11 @@ const Messenger = () => {
               setAllGroups(data);
             }
           );
-          post("/allContacts", { currentUserEmail: currentUser.email }).then(
-            (data) => {
-              setAllContacts(data);
-            }
-          );
+        post("/allContacts", { currentUserEmail: currentUser.email }).then(
+          (data) => {
+            setAllContacts(data);
+          }
+        );
       }
     });
   }, [currentUser.email, lastInsertedGroupId, socket]);
@@ -359,6 +368,7 @@ const Messenger = () => {
   interface DeleteIcons {
     [key: number]: boolean;
   }
+  
   const [deleteIcons, setDeleteIcons] = useState<DeleteIcons>({});
 
   const handleMouseEnter = (index: any) => {
@@ -368,6 +378,24 @@ const Messenger = () => {
   const handleMouseLeave = (index: any) => {
     setDeleteIcons({ ...deleteIcons, [index]: false });
   };
+  // handle arrow down 
+  interface DownArrowIcons {
+    [key: number]: boolean;
+  }
+  const [downArrowIcons, setDownArrowIcons] = useState<DownArrowIcons>({});
+  const handleMouseEnterContact1 = (index: any) => {
+    setDownArrowIcons({ ...downArrowIcons, [index]: true });
+  };
+
+  const handleMouseLeaveContact1 = (index: any) => {
+    setDownArrowIcons({ ...downArrowIcons, [index]: false });
+  };
+
+  // handle arrow down 
+  
+
+
+
   const handleDeleteMessage = (id: any) => {
     socket?.emit("deleteSingleChat", {
       id,
@@ -423,12 +451,116 @@ const Messenger = () => {
   useEffect(() => {
     setGroupChatLoad(false);
   }, [groupChatLoad]);
+  useEffect(() => {
+    console.log("=======================");
+    console.log(allContacts);
+    console.log("=======================");
+  }, [allContacts]);
 
+  const [showArrowAngle,setShowArrowAngle] =useState(false)
+
+  // disabled mouse right button click 
+  const [dropDownsContact , setDropDownsContact ] = useState<any>({})
+
+  const handleRightClick =  useCallback( (event:any) => {
+    event.preventDefault(); // Prevent default right-click behavior
+    if(event.button === 2  &&  (event.target.classList.contains('contact1') || event.target.closest('.contact1'))){
+      const groupId = event.target.closest('.contact1')?.getAttribute('data-id');
+      
+      if(dropDownsContact[groupId]){
+      setDropDownsContact({...dropDownsContact,[groupId]: false})
+      return
+      }
+
+      // setDropDownsContact({...dropDownsContact,[groupId]: true})
+      const updatedDropDownsContact = Object.fromEntries(
+        Object.keys(dropDownsContact).map((key) => [key, false])
+      );
+      
+      // Set the specific key to true
+      updatedDropDownsContact[groupId] = true;
+      setDropDownsContact(updatedDropDownsContact);
+
+      
+    }
+    
+  },[dropDownsContact]);
+
+  
+
+  useEffect(() => {
+    document.addEventListener('contextmenu', handleRightClick);
+    return () => document.removeEventListener('contextmenu', handleRightClick);
+  }, [handleRightClick]);
+
+  const handleArchiveChat = useCallback( (recieverEmail:any,conactId:any)=>{
+    setDropDownsContact({...dropDownsContact,[conactId]:false})
+
+    post('/makeChatArchive',{sender:currentUser.email,reciever:recieverEmail}).then((data)=>{
+      // alert(recieverEmail + 'archived successfully')
+
+      post('/allContacts',{currentUserEmail:currentUser.email}).then((data)=>{
+        setAllContacts(data)
+      })
+      
+    })
+    
+
+  },[currentUser.email, dropDownsContact])
+
+  // disabled mouse right button click 
+  const [optionsDropdown,setOptionsDropdown]  = useState(false)
+
+  const handleOptionsDropDown = () =>{
+
+    if(optionsDropdown){
+      setOptionsDropdown(false)
+      return
+    }
+    setOptionsDropdown(true)
+
+
+    
+
+  }
+  const getArchivedChats = () =>{
+    setOptionsDropdown(false)
+    post('/getArchivedChats',{currentUserEmail:currentUser.email}).then((data)=>{
+      setAllContacts(data)
+    })
+
+    
+  }
+  const getAllMessages = () =>{
+    setOptionsDropdown(false)
+    post('/allContacts',{currentUserEmail:currentUser.email}).then((data)=>{
+      setAllContacts(data)
+    })
+
+    
+  }
+
+
+
+
+  
   return (
     <Layout>
       <div className="mainContent">
         <div className="chat">
-          {/* modal  */}
+
+        
+
+          
+
+
+          
+
+          
+
+          
+          
+        
           {/* <button onClick={handleUploadClick}>Upload File</button> */}
           <UploadChatFile
             uploadShow={showUploadModal}
@@ -443,7 +575,13 @@ const Messenger = () => {
           {/* current */}
           <div className="contacts custom_scroll">
             <div className="all-messages-parent">
-              <div className="all-messages">All Messages</div>
+            
+              <div className="all-messages all-messages-custom"> <span className="filter_list" onClick={handleOptionsDropDown} ><MdOutlineFilterList /></span>  <span>All Messages</span> 
+              { optionsDropdown && <span className="optionsDropdown"  > <Dropdown.Menu show>
+      <Dropdown.Item eventKey="3"  onClick={getAllMessages} >All Messages</Dropdown.Item>
+      <Dropdown.Item eventKey="3"  onClick={getArchivedChats} >Archived</Dropdown.Item>
+    </Dropdown.Menu>  </span>}
+              </div>
               <div className="single_group_chat_icon_parent">
                 <div
                   className="button showGroupNameButton group_add_button"
@@ -555,15 +693,16 @@ const Messenger = () => {
               </div>
             )}
 
+            {/* =================================== */}
 
-
-              {/* =================================== */}
-
-              {
-                allContacts.map((contact)=>{
+            {
+                allContacts.map((contact,index)=>{
                   if(contact.group_id !== undefined){
+                    
                     return (
+                      
                             <div
+                            data-id={contact.group_id}
                               className="contact1"
                               style={{
                                 marginLeft: "auto",
@@ -576,9 +715,44 @@ const Messenger = () => {
                                     ? "#6366F1"
                                     : "white",
                               }}
-                              onClick={() => handleSelectedGroup(contact)}
+                              
+                              onClick={(event) =>
+                                 {
+                                  handleSelectedGroup(contact)
+                                  handleRightClick(event)
+                                }
+                                }
                               key={contact.id}
+                              
+                              onMouseEnter={() =>
+                                handleMouseEnterContact1(contact.id)
+                              }
+                              onMouseLeave={() =>
+                                handleMouseLeaveContact1(contact.id)
+                              }
                             >
+                              {
+                               downArrowIcons[contact.id] &&   <span className="down_arrow">
+                                <FaAngleDown />
+                              </span>
+
+                              }
+
+                              {
+                                dropDownsContact[contact.group_id] &&  
+                            <Dropdown.Menu show>
+                                  <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+                                  <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+                                  <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+                                </Dropdown.Menu>
+                              
+                              }
+                              
+
+                               
+
+
+
                               <div className="avatar-parent">
                                 <IconContext.Provider
                                   value={{
@@ -634,6 +808,7 @@ const Messenger = () => {
                                 <div className="ellipse" />
                               </div>
                             </div>
+                      
                           
                         
 
@@ -651,7 +826,11 @@ const Messenger = () => {
                       
                             <div
                               className="contact1"
-                              onClick={() => handleSelectUser(contact)}
+                              data-id={contact.id}
+                              onClick={(event) => {
+                                handleSelectUser(contact)
+                                handleRightClick(event)
+                              }}
                               key={contact.id}
                               style={{
                                 backgroundColor:
@@ -662,7 +841,29 @@ const Messenger = () => {
                                     ? "#6366F1"
                                     : "white",
                               }}
+                              onMouseEnter={() =>
+                                handleMouseEnterContact1(contact.id)
+                              }
+                              onMouseLeave={() =>
+                                handleMouseLeaveContact1(contact.id)
+                              }
                             >
+                              {
+                               downArrowIcons[contact.id] &&   <span className="down_arrow">
+                                <FaAngleDown />
+                              </span>
+                              }
+                              {
+                                dropDownsContact[contact.id] &&  
+                            <Dropdown.Menu show>
+                                  <Dropdown.Item href="#/action-1" onClick={(e) => {
+                                    (e as any).stopPropagation()
+                                     handleArchiveChat(contact.email,contact.id)
+                                  }} >Archive</Dropdown.Item>
+                           
+                                </Dropdown.Menu>
+                              
+                              }
                               <div className="avatar-parent">
                                 <div className="avatar">
                                   <img className="avatar-icon1" alt="" src={avatar} />
@@ -734,19 +935,9 @@ const Messenger = () => {
                 })
               }
 
-
-
             
 
-
-
-
-
-
-              {/* =================================== */}
-
-
-
+            {/* =================================== */}
           </div>
 
           {/* default  */}
@@ -1120,5 +1311,4 @@ const Messenger = () => {
     </Layout>
   );
 };
-
 export default Messenger;

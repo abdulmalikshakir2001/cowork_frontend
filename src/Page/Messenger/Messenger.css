@@ -1240,6 +1240,31 @@
     cursor: pointer;
   }
 
+  .contact1{
+    position: relative;
+  }
   
+  .down_arrow{
+    font-size: 19px;
+    position: absolute;
+    right: 10px;
+    top: 26px;
+  }
   
-  
+  .all-messages-custom{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .filter_list{
+    margin-right: 5px;
+    cursor: pointer;
+  }
+  .optionsDropdown{
+    
+    /* transform: translateY(10px); */
+    position: absolute;
+    top: 25px;
+    left: -10px;
+  }
