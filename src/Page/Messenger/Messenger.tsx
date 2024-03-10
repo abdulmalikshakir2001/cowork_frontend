@@ -740,11 +740,14 @@ const Messenger = () => {
 
                               {
                                 dropDownsContact[contact.group_id] &&  
+                                
+                                <span className="contacts_option_dropdown" >
                             <Dropdown.Menu show>
                                   <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
                                   <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
                                   <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
                                 </Dropdown.Menu>
+                                </span>
                               
                               }
                               
@@ -855,6 +858,7 @@ const Messenger = () => {
                               }
                               {
                                 dropDownsContact[contact.id] &&  
+                                <span className="contacts_option_dropdown">
                             <Dropdown.Menu show>
                                   <Dropdown.Item href="#/action-1" onClick={(e) => {
                                     (e as any).stopPropagation()
@@ -862,6 +866,7 @@ const Messenger = () => {
                                   }} >Archive</Dropdown.Item>
                            
                                 </Dropdown.Menu>
+                                </span>
                               
                               }
                               <div className="avatar-parent">
