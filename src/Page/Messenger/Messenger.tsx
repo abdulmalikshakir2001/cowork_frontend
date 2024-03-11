@@ -39,10 +39,6 @@ import UploadChatFile from "../../Component/UploadFile/UploadChatFile";
 import { MdOutlineFilterList } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 
-
-
-
-
 interface IChatMessage {
   id: number;
   email: string;
@@ -52,9 +48,6 @@ interface IChatMessage {
 }
 
 const Messenger = () => {
-  
-  
-  
   const singleChatDivRef = useRef<HTMLDivElement>(null);
   const afterPreviewImgRef = useRef<HTMLDivElement>(null);
   const currentUser = useAppSelector(selectAuthUser); // this object contain email,role,name -->focus
@@ -368,7 +361,7 @@ const Messenger = () => {
   interface DeleteIcons {
     [key: number]: boolean;
   }
-  
+
   const [deleteIcons, setDeleteIcons] = useState<DeleteIcons>({});
 
   const handleMouseEnter = (index: any) => {
@@ -378,7 +371,7 @@ const Messenger = () => {
   const handleMouseLeave = (index: any) => {
     setDeleteIcons({ ...deleteIcons, [index]: false });
   };
-  // handle arrow down 
+  // handle arrow down
   interface DownArrowIcons {
     [key: number]: boolean;
   }
@@ -391,10 +384,7 @@ const Messenger = () => {
     setDownArrowIcons({ ...downArrowIcons, [index]: false });
   };
 
-  // handle arrow down 
-  
-
-
+  // handle arrow down
 
   const handleDeleteMessage = (id: any) => {
     socket?.emit("deleteSingleChat", {
@@ -457,125 +447,138 @@ const Messenger = () => {
     console.log("=======================");
   }, [allContacts]);
 
-  const [showArrowAngle,setShowArrowAngle] =useState(false)
+  const [showArrowAngle, setShowArrowAngle] = useState(false);
 
-  // disabled mouse right button click 
-  const [dropDownsContact , setDropDownsContact ] = useState<any>({})
+  // disabled mouse right button click
+  const [dropDownsContact, setDropDownsContact] = useState<any>({});
 
-  const handleRightClick =  useCallback( (event:any) => {
-    event.preventDefault(); // Prevent default right-click behavior
-    if(event.button === 2  &&  (event.target.classList.contains('contact1') || event.target.closest('.contact1'))){
-      const groupId = event.target.closest('.contact1')?.getAttribute('data-id');
-      
-      if(dropDownsContact[groupId]){
-      setDropDownsContact({...dropDownsContact,[groupId]: false})
-      return
+  const handleRightClick = useCallback(
+    (event: any) => {
+      event.preventDefault(); // Prevent default right-click behavior
+      if (
+        event.button === 2 &&
+        (event.target.classList.contains("contact1") ||
+          event.target.closest(".contact1"))
+      ) {
+        const groupId = event.target
+          .closest(".contact1")
+          ?.getAttribute("data-id");
+
+        if (dropDownsContact[groupId]) {
+          setDropDownsContact({ ...dropDownsContact, [groupId]: false });
+          return;
+        }
+
+        // setDropDownsContact({...dropDownsContact,[groupId]: true})
+        const updatedDropDownsContact = Object.fromEntries(
+          Object.keys(dropDownsContact).map((key) => [key, false])
+        );
+
+        // Set the specific key to true
+        updatedDropDownsContact[groupId] = true;
+        setDropDownsContact(updatedDropDownsContact);
       }
-
-      // setDropDownsContact({...dropDownsContact,[groupId]: true})
-      const updatedDropDownsContact = Object.fromEntries(
-        Object.keys(dropDownsContact).map((key) => [key, false])
-      );
-      
-      // Set the specific key to true
-      updatedDropDownsContact[groupId] = true;
-      setDropDownsContact(updatedDropDownsContact);
-
-      
-    }
-    
-  },[dropDownsContact]);
-
-  
+    },
+    [dropDownsContact]
+  );
 
   useEffect(() => {
-    document.addEventListener('contextmenu', handleRightClick);
-    return () => document.removeEventListener('contextmenu', handleRightClick);
+    document.addEventListener("contextmenu", handleRightClick);
+    return () => document.removeEventListener("contextmenu", handleRightClick);
   }, [handleRightClick]);
 
-  const handleArchiveChat = useCallback( (recieverEmail:any,conactId:any)=>{
-    setDropDownsContact({...dropDownsContact,[conactId]:false})
+  const handleArchiveChat = useCallback(
+    (recieverEmail: any, conactId: any) => {
+      setDropDownsContact({ ...dropDownsContact, [conactId]: false });
 
-    post('/makeChatArchive',{sender:currentUser.email,reciever:recieverEmail}).then((data)=>{
-      // alert(recieverEmail + 'archived successfully')
+      post("/makeChatArchive", {
+        sender: currentUser.email,
+        reciever: recieverEmail,
+      }).then((data) => {
+        // alert(recieverEmail + 'archived successfully')
 
-      post('/allContacts',{currentUserEmail:currentUser.email}).then((data)=>{
-        setAllContacts(data)
-      })
+        post("/allContacts", { currentUserEmail: currentUser.email }).then(
+          (data) => {
+            setAllContacts(data);
+          }
+        );
+      });
+    },
+    [currentUser.email, dropDownsContact]
+  );
+  const handleArchiveGroupChat = useCallback(
+    (email: any, groupId: any) => {
       
-    })
-    
-
-  },[currentUser.email, dropDownsContact])
-
-  const handleUnArchiveChat = useCallback( (recieverEmail:any,conactId:any)=>{
-    setDropDownsContact({...dropDownsContact,[conactId]:false})
-
-    post('/deleteArchive',{sender:currentUser.email,reciever:recieverEmail}).then((data)=>{
-      // alert(recieverEmail + 'archived successfully')
-
-      post('/allContacts',{currentUserEmail:currentUser.email}).then((data)=>{
-        setAllContacts(data)
-      })
       
-    })
-    
+      setDropDownsContact({ ...dropDownsContact, [groupId]: false });
 
-  },[currentUser.email, dropDownsContact])
+      post("/makeGroupChatArchive", {
+        email,
+        groupId
+      }).then((data) => {
+        // alert(recieverEmail + 'archived successfully')
+        post("/allContacts", { currentUserEmail: currentUser.email }).then(
+          (data) => {
+            setAllContacts(data);
+          }
+        );
+        
+      });
+    },
+    [currentUser.email, dropDownsContact]
+  );
 
-  // disabled mouse right button click 
-  const [optionsDropdown,setOptionsDropdown]  = useState(false)
+  const handleUnArchiveChat = useCallback(
+    (recieverEmail: any, conactId: any) => {
+      setDropDownsContact({ ...dropDownsContact, [conactId]: false });
 
-  const handleOptionsDropDown = () =>{
+      post("/deleteArchive", {
+        sender: currentUser.email,
+        reciever: recieverEmail,
+      }).then((data) => {
+        // alert(recieverEmail + 'archived successfully')
 
-    if(optionsDropdown){
-      setOptionsDropdown(false)
-      return
+        post("/allContacts", { currentUserEmail: currentUser.email }).then(
+          (data) => {
+            setAllContacts(data);
+          }
+        );
+      });
+    },
+    [currentUser.email, dropDownsContact]
+  );
+
+  // disabled mouse right button click
+  const [optionsDropdown, setOptionsDropdown] = useState(false);
+
+  const handleOptionsDropDown = () => {
+    if (optionsDropdown) {
+      setOptionsDropdown(false);
+      return;
     }
-    setOptionsDropdown(true)
+    setOptionsDropdown(true);
+  };
+  const getArchivedChats = () => {
+    setOptionsDropdown(false);
+    post("/getArchivedChats", { currentUserEmail: currentUser.email }).then(
+      (data) => {
+        setAllContacts(data);
+      }
+    );
+  };
+  const getAllMessages = () => {
+    setOptionsDropdown(false);
+    post("/allContacts", { currentUserEmail: currentUser.email }).then(
+      (data) => {
+        setAllContacts(data);
+      }
+    );
+  };
 
-
-    
-
-  }
-  const getArchivedChats = () =>{
-    setOptionsDropdown(false)
-    post('/getArchivedChats',{currentUserEmail:currentUser.email}).then((data)=>{
-      setAllContacts(data)
-    })
-
-    
-  }
-  const getAllMessages = () =>{
-    setOptionsDropdown(false)
-    post('/allContacts',{currentUserEmail:currentUser.email}).then((data)=>{
-      setAllContacts(data)
-    })
-
-    
-  }
-
-
-
-
-  
   return (
     <Layout>
       <div className="mainContent">
         <div className="chat">
-
-        
-
-          
-
-
-          
-
-          
-
-          
-          
-        
           {/* <button onClick={handleUploadClick}>Upload File</button> */}
           <UploadChatFile
             uploadShow={showUploadModal}
@@ -590,12 +593,25 @@ const Messenger = () => {
           {/* current */}
           <div className="contacts custom_scroll">
             <div className="all-messages-parent">
-            
-              <div className="all-messages all-messages-custom"> <span className="filter_list" onClick={handleOptionsDropDown} ><MdOutlineFilterList /></span>  <span>All Messages</span> 
-              { optionsDropdown && <span className="optionsDropdown"  > <Dropdown.Menu show>
-      <Dropdown.Item eventKey="3"  onClick={getAllMessages} >All Messages</Dropdown.Item>
-      <Dropdown.Item eventKey="3"  onClick={getArchivedChats} >Archived</Dropdown.Item>
-    </Dropdown.Menu>  </span>}
+              <div className="all-messages all-messages-custom">
+                {" "}
+                <span className="filter_list" onClick={handleOptionsDropDown}>
+                  <MdOutlineFilterList />
+                </span>{" "}
+                <span>All Messages</span>
+                {optionsDropdown && (
+                  <span className="optionsDropdown">
+                    {" "}
+                    <Dropdown.Menu show>
+                      <Dropdown.Item eventKey="3" onClick={getAllMessages}>
+                        All Messages
+                      </Dropdown.Item>
+                      <Dropdown.Item eventKey="3" onClick={getArchivedChats}>
+                        Archived
+                      </Dropdown.Item>
+                    </Dropdown.Menu>{" "}
+                  </span>
+                )}
               </div>
               <div className="single_group_chat_icon_parent">
                 <div
@@ -710,266 +726,235 @@ const Messenger = () => {
 
             {/* =================================== */}
 
-            {
-                allContacts.map((contact,index)=>{
-                  if(contact.group_id !== undefined){
-                    
-                    return (
-                      
-                            <div
-                            data-id={contact.group_id}
-                              className="contact1"
-                              style={{
-                                marginLeft: "auto",
-                                marginRight: "auto",
-                                backgroundColor:
-                                  checkSelectedGroup !== null
-                                    ? ""
-                                    : selectedGroup &&
-                                      selectedGroup.group_id === contact.group_id
-                                    ? "#6366F1"
-                                    : "white",
-                              }}
-                              
-                              onClick={(event) =>
-                                 {
-                                  handleSelectedGroup(contact)
-                                  handleRightClick(event)
-                                }
-                                }
-                              key={contact.id}
-                              
-                              onMouseEnter={() =>
-                                handleMouseEnterContact1(contact.id)
-                              }
-                              onMouseLeave={() =>
-                                handleMouseLeaveContact1(contact.id)
-                              }
-                            >
-                              {
-                               downArrowIcons[contact.id] &&   <span className="down_arrow">
-                                <FaAngleDown />
-                              </span>
+            {allContacts.map((contact, index) => {
+              if (contact.group_id !== undefined) {
+                return (
+                  <div
+                    data-id={contact.group_id}
+                    className="contact1"
+                    style={{
+                      marginLeft: "auto",
+                      marginRight: "auto",
+                      backgroundColor:
+                        checkSelectedGroup !== null
+                          ? ""
+                          : selectedGroup &&
+                            selectedGroup.group_id === contact.group_id
+                          ? "#6366F1"
+                          : "white",
+                    }}
+                    onClick={(event) => {
+                      handleSelectedGroup(contact);
+                      handleRightClick(event);
+                    }}
+                    key={contact.id}
+                    onMouseEnter={() => handleMouseEnterContact1(contact.id)}
+                    onMouseLeave={() => handleMouseLeaveContact1(contact.id)}
+                  >
+                    {downArrowIcons[contact.id] && (
+                      <span className="down_arrow">
+                        <FaAngleDown />
+                      </span>
+                    )}
 
-                              }
+                    {dropDownsContact[contact.group_id] && (
+                      <span className="contacts_option_dropdown">
+                        <Dropdown.Menu show>
+                          <Dropdown.Item
+                            href="#/action-1"
+                            onClick={(e) => {
+                              (e as any).stopPropagation();
+                              handleArchiveGroupChat(
+                                contact.email,
+                                contact.group_id
+                              );
+                            }}
+                          >
+                            Archive
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </span>
+                    )}
 
-                              {
-                                dropDownsContact[contact.group_id] &&  
-                                
-                                <span className="contacts_option_dropdown" >
-                            <Dropdown.Menu show>
-                                  <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                                  <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                                  <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-                                </Dropdown.Menu>
-                                </span>
-                              
-                              }
-                              
+                    <div className="avatar-parent">
+                      <IconContext.Provider
+                        value={{
+                          color: "black",
+                          className: "global-class-name",
+                          size: "2em",
+                        }}
+                      >
+                        <div>
+                          <MdGroup />
+                        </div>
+                      </IconContext.Provider>
 
-                               
-
-
-
-                              <div className="avatar-parent">
-                                <IconContext.Provider
-                                  value={{
-                                    color: "black",
-                                    className: "global-class-name",
-                                    size: "2em",
-                                  }}
-                                >
-                                  <div>
-                                    <MdGroup />
-                                  </div>
-                                </IconContext.Provider>
-          
-                                <div className="text">
-                                  <div
-                                    className={
-                                      selectedGroup === contact ? "" : "bogdan-krivenchenko"
-                                    }
-                                    style={
-                                      selectedGroup &&
-                                      selectedGroup.group_id === contact.group_id
-                                        ? { color: "white" }
-                                        : {}
-                                    }
-                                  >
-                                    {contact.group_name}
-                                  </div>
-                                  <div
-                                    className="hi-how-are"
-                                    style={
-                                      selectedGroup &&
-                                      selectedGroup.group_id === contact.group_id
-                                        ? { color: "white" }
-                                        : {}
-                                    }
-                                  >
-                                    {contact.message}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="parent">
-                                <div
-                                  className="div16"
-                                  style={
-                                    selectedGroup &&
-                                    selectedGroup.group_id === contact.group_id
-                                      ? { color: "white" }
-                                      : {}
-                                  }
-                                >
-                                  <AgoTime date={contact.message_created_at} />
-                                </div>
-                                <div className="ellipse" />
-                              </div>
-                            </div>
-                      
-                          
-                        
-
-
-
-
-
-                        )
-                  }
-                  else{
-                    return (
-                      <div className="contact">
-              
-                      
-                      
-                            <div
-                              className="contact1"
-                              data-id={contact.id}
-                              onClick={(event) => {
-                                handleSelectUser(contact)
-                                handleRightClick(event)
-                              }}
-                              key={contact.id}
-                              style={{
-                                backgroundColor:
-                                  checkSelectedGroup === null
-                                    ? ""
-                                    : selectedUser &&
-                                      selectedUser.email === contact.email
-                                    ? "#6366F1"
-                                    : "white",
-                              }}
-                              onMouseEnter={() =>
-                                handleMouseEnterContact1(contact.id)
-                              }
-                              onMouseLeave={() =>
-                                handleMouseLeaveContact1(contact.id)
-                              }
-                            >
-                              {
-                               downArrowIcons[contact.id] &&   <span className="down_arrow">
-                                <FaAngleDown />
-                              </span>
-                              }
-                              {
-                                dropDownsContact[contact.id] &&  
-                                <span className="contacts_option_dropdown">
-                            <Dropdown.Menu show>
-
-                              {
-                                contact.is_archive === 0 ? <Dropdown.Item href="#/action-1" onClick={(e) => {
-                                  (e as any).stopPropagation()
-                                   handleArchiveChat(contact.email,contact.id)
-                                }} >Archive</Dropdown.Item> : <Dropdown.Item href="#/action-1" onClick={(e) => {
-                                  (e as any).stopPropagation()
-                                   handleUnArchiveChat(contact.email,contact.id)
-                                }} >Un Archive</Dropdown.Item>
-
-                              }
-
-
-                                  
-
-
-
-
-                           
-                                </Dropdown.Menu>
-                                </span>
-                              
-                              }
-                              <div className="avatar-parent">
-                                <div className="avatar">
-                                  <img className="avatar-icon1" alt="" src={avatar} />
-                                  <div className="avatar-online-indicator">
-                                    <img
-                                      alt=""
-                                      src={
-                                        contact.online_status === 1
-                                          ? onlineShow
-                                          : "offline"
-                                      }
-                                    />
-                                  </div>
-                                </div>
-        
-                                <div className="text">
-                                  <div
-                                    className={
-                                      selectedUser === contact
-                                        ? ""
-                                        : "bogdan-krivenchenko"
-                                    }
-                                    style={
-                                      selectedUser &&
-                                      selectedUser.email === contact.email
-                                        ? { color: "white" }
-                                        : {}
-                                    }
-                                  >
-                                    {contact.name}
-                                  </div>
-                                  <div
-                                    className="hi-how-are"
-                                    id="hi-how-are"
-                                    style={
-                                      selectedUser &&
-                                      selectedUser.email === contact.email
-                                        ? { color: "white" }
-                                        : {}
-                                    }
-                                  >
-                                    {contact.message}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="parent">
-                                <div
-                                  className="div16"
-                                  style={
-                                    selectedUser && selectedUser.email === contact.email
-                                      ? { color: "white" }
-                                      : {}
-                                  }
-                                >
-                                  {<AgoTime date={contact.last_message_date} />}
-                                </div>
-                                <div className="ellipse" />
-                              </div>
-                            </div>
-                      
-                      
+                      <div className="text">
+                        <div
+                          className={
+                            selectedGroup === contact
+                              ? ""
+                              : "bogdan-krivenchenko"
+                          }
+                          style={
+                            selectedGroup &&
+                            selectedGroup.group_id === contact.group_id
+                              ? { color: "white" }
+                              : {}
+                          }
+                        >
+                          {contact.group_name}
+                        </div>
+                        <div
+                          className="hi-how-are"
+                          style={
+                            selectedGroup &&
+                            selectedGroup.group_id === contact.group_id
+                              ? { color: "white" }
+                              : {}
+                          }
+                        >
+                          {contact.message}
+                        </div>
+                      </div>
                     </div>
-                      
-                      
-                      )
+                    <div className="parent">
+                      <div
+                        className="div16"
+                        style={
+                          selectedGroup &&
+                          selectedGroup.group_id === contact.group_id
+                            ? { color: "white" }
+                            : {}
+                        }
+                      >
+                        <AgoTime date={contact.message_created_at} />
+                      </div>
+                      <div className="ellipse" />
+                    </div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="contact">
+                    <div
+                      className="contact1"
+                      data-id={contact.id}
+                      onClick={(event) => {
+                        handleSelectUser(contact);
+                        handleRightClick(event);
+                      }}
+                      key={contact.id}
+                      style={{
+                        backgroundColor:
+                          checkSelectedGroup === null
+                            ? ""
+                            : selectedUser &&
+                              selectedUser.email === contact.email
+                            ? "#6366F1"
+                            : "white",
+                      }}
+                      onMouseEnter={() => handleMouseEnterContact1(contact.id)}
+                      onMouseLeave={() => handleMouseLeaveContact1(contact.id)}
+                    >
+                      {downArrowIcons[contact.id] && (
+                        <span className="down_arrow">
+                          <FaAngleDown />
+                        </span>
+                      )}
+                      {dropDownsContact[contact.id] && (
+                        <span className="contacts_option_dropdown">
+                          <Dropdown.Menu show>
+                            {contact.is_archive === 0 ? (
+                              <Dropdown.Item
+                                href="#/action-1"
+                                onClick={(e) => {
+                                  (e as any).stopPropagation();
+                                  handleArchiveChat(contact.email, contact.id);
+                                }}
+                              >
+                                Archive
+                              </Dropdown.Item>
+                            ) : (
+                              <Dropdown.Item
+                                href="#/action-1"
+                                onClick={(e) => {
+                                  (e as any).stopPropagation();
+                                  handleUnArchiveChat(
+                                    contact.email,
+                                    contact.id
+                                  );
+                                }}
+                              >
+                                Un Archive
+                              </Dropdown.Item>
+                            )}
+                          </Dropdown.Menu>
+                        </span>
+                      )}
+                      <div className="avatar-parent">
+                        <div className="avatar">
+                          <img className="avatar-icon1" alt="" src={avatar} />
+                          <div className="avatar-online-indicator">
+                            <img
+                              alt=""
+                              src={
+                                contact.online_status === 1
+                                  ? onlineShow
+                                  : "offline"
+                              }
+                            />
+                          </div>
+                        </div>
 
-                  }
-
-                })
+                        <div className="text">
+                          <div
+                            className={
+                              selectedUser === contact
+                                ? ""
+                                : "bogdan-krivenchenko"
+                            }
+                            style={
+                              selectedUser &&
+                              selectedUser.email === contact.email
+                                ? { color: "white" }
+                                : {}
+                            }
+                          >
+                            {contact.name}
+                          </div>
+                          <div
+                            className="hi-how-are"
+                            id="hi-how-are"
+                            style={
+                              selectedUser &&
+                              selectedUser.email === contact.email
+                                ? { color: "white" }
+                                : {}
+                            }
+                          >
+                            {contact.message}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="parent">
+                        <div
+                          className="div16"
+                          style={
+                            selectedUser && selectedUser.email === contact.email
+                              ? { color: "white" }
+                              : {}
+                          }
+                        >
+                          {<AgoTime date={contact.last_message_date} />}
+                        </div>
+                        <div className="ellipse" />
+                      </div>
+                    </div>
+                  </div>
+                );
               }
-
-            
+            })}
 
             {/* =================================== */}
           </div>
