@@ -547,6 +547,28 @@ const Messenger = () => {
     },
     [currentUser.email, dropDownsContact]
   );
+  
+  const handleGroupUnArchiveChat = useCallback(
+    ( conactId: any) => {
+      setDropDownsContact({ ...dropDownsContact, [conactId]: false });
+
+      post("/deleteGroupArchive", {
+        email: currentUser.email,
+        groupId:conactId
+        
+      }).then((data) => {
+        // alert(recieverEmail + 'archived successfully')
+
+        post("/allContacts", { currentUserEmail: currentUser.email }).then(
+          (data) => {
+            setAllContacts(data);
+          }
+        );
+      });
+    },
+    [currentUser.email, dropDownsContact]
+  );
+
 
   // disabled mouse right button click
   const [optionsDropdown, setOptionsDropdown] = useState(false);
@@ -760,7 +782,9 @@ const Messenger = () => {
                     {dropDownsContact[contact.group_id] && (
                       <span className="contacts_option_dropdown">
                         <Dropdown.Menu show>
-                          <Dropdown.Item
+
+                        {contact.is_archive === 0 ? 
+                          (<Dropdown.Item
                             href="#/action-1"
                             onClick={(e) => {
                               (e as any).stopPropagation();
@@ -771,7 +795,27 @@ const Messenger = () => {
                             }}
                           >
                             Archive
-                          </Dropdown.Item>
+                          </Dropdown.Item>)
+                          :
+                            (
+                              <Dropdown.Item
+                                href="#/action-1"
+                                onClick={(e) => {
+                                  (e as any).stopPropagation();
+                                  handleGroupUnArchiveChat(
+                                    contact.group_id
+                                  );
+                                }}
+                              >
+                                Un Archive
+                              </Dropdown.Item>
+                            )
+                          
+
+}
+
+
+
                         </Dropdown.Menu>
                       </span>
                     )}
