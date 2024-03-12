@@ -512,7 +512,7 @@ const Messenger = () => {
       
       setDropDownsContact({ ...dropDownsContact, [groupId]: false });
 
-      post("/makeGroupChatArchive", {
+      post("/make_group_chat_archive", {
         email,
         groupId
       }).then((data) => {
